@@ -115,6 +115,12 @@ export default function App() {
         />
       </section>
 
+      {/* Game Log */}
+      <section className={styles.logSection} aria-label="Play log">
+        <div className={styles.sectionLabel}>Play-by-Play</div>
+        <GameLog log={state.log} />
+      </section>
+
       {/* Roster & Stats */}
       <section className={styles.logSection} aria-label="Team Rosters">
         <div className={styles.sectionLabel}>Team Rosters</div>
@@ -124,12 +130,6 @@ export default function App() {
           batterIndex={state.batterIndex}
           halfInning={state.halfInning}
         />
-      </section>
-
-      {/* Game Log */}
-      <section className={styles.logSection} aria-label="Play log">
-        <div className={styles.sectionLabel}>Play-by-Play</div>
-        <GameLog log={state.log} />
       </section>
 
       {/* Game Over Overlay */}
