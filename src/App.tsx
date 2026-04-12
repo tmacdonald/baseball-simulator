@@ -85,7 +85,10 @@ export default function App() {
         {/* Left: Diamond + context */}
         <section className={styles.fieldSection} aria-label="Field">
           <div className={styles.sectionLabel}>Field</div>
-          <Diamond bases={state.bases} />
+          <Diamond 
+            bases={state.bases} 
+            roster={state.halfInning === 'top' ? state.rosters.away : state.rosters.home} 
+          />
         </section>
 
         {/* Center: Dice + result */}

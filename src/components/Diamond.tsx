@@ -1,7 +1,9 @@
 import styles from './Diamond.module.css'
+import type { Player } from '../types'
 
 interface Props {
   bases: [number | null, number | null, number | null] // 1st, 2nd, 3rd
+  roster?: Player[]
 }
 
 // SVG coordinate layout (200×200 viewBox)
@@ -15,7 +17,7 @@ const POSITIONS = {
 
 const BASE_SIZE = 14
 
-export default function Diamond({ bases }: Props) {
+export default function Diamond({ bases, roster }: Props) {
   const [on1stVal, on2ndVal, on3rdVal] = bases
   
   const on1st = on1stVal !== null
@@ -41,6 +43,11 @@ export default function Diamond({ bases }: Props) {
           transform={`rotate(45, ${POSITIONS.second.cx}, ${POSITIONS.second.cy})`}
         />
         {on2nd && <circle className={styles.runner} cx={POSITIONS.second.cx} cy={POSITIONS.second.cy} r={7} />}
+        {on2nd && roster && roster[on2ndVal as number] && (
+          <text x={POSITIONS.second.cx} y={POSITIONS.second.cy - 12} className={styles.runnerText} dominantBaseline="baseline" textAnchor="middle">
+            {roster[on2ndVal as number].position} (#{roster[on2ndVal as number].number})
+          </text>
+        )}
 
         {/* 3rd base */}
         <rect
@@ -52,6 +59,11 @@ export default function Diamond({ bases }: Props) {
           transform={`rotate(45, ${POSITIONS.third.cx}, ${POSITIONS.third.cy})`}
         />
         {on3rd && <circle className={styles.runner} cx={POSITIONS.third.cx} cy={POSITIONS.third.cy} r={7} />}
+        {on3rd && roster && roster[on3rdVal as number] && (
+          <text x={POSITIONS.third.cx - 14} y={POSITIONS.third.cy + 4} className={styles.runnerText} dominantBaseline="middle" textAnchor="end">
+            {roster[on3rdVal as number].position} (#{roster[on3rdVal as number].number})
+          </text>
+        )}
 
         {/* 1st base */}
         <rect
@@ -63,6 +75,11 @@ export default function Diamond({ bases }: Props) {
           transform={`rotate(45, ${POSITIONS.first.cx}, ${POSITIONS.first.cy})`}
         />
         {on1st && <circle className={styles.runner} cx={POSITIONS.first.cx} cy={POSITIONS.first.cy} r={7} />}
+        {on1st && roster && roster[on1stVal as number] && (
+          <text x={POSITIONS.first.cx + 14} y={POSITIONS.first.cy + 4} className={styles.runnerText} dominantBaseline="middle" textAnchor="start">
+            {roster[on1stVal as number].position} (#{roster[on1stVal as number].number})
+          </text>
+        )}
 
         {/* Home plate (pentagon-ish as a small rotated rect) */}
         <rect
