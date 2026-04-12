@@ -1,4 +1,4 @@
-import type { GameState, GameAction, Outcome } from './types'
+import type { GameState, GameAction, Outcome, DiceScheme } from './types'
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
 
@@ -11,19 +11,79 @@ export function rollDice(): [number, number] {
 
 export function outcomeForRoll(sum: number): Outcome {
   switch (sum) {
-    case 2:  return 'Home Run'
-    case 3:  return 'Triple'
-    case 4:  return 'Double'
-    case 5:  return 'Single'
-    case 6:  return 'Single'
-    case 7:  return 'Out (fly out)'
-    case 8:  return 'Out (ground out)'
-    case 9:  return 'Out (strikeout)'
+    case 2: return 'Home Run'
+    case 3: return 'Triple'
+    case 4: return 'Double'
+    case 5: return 'Single'
+    case 6: return 'Single'
+    case 7: return 'Out (fly out)'
+    case 8: return 'Out (ground out)'
+    case 9: return 'Out (strikeout)'
     case 10: return 'Walk'
     case 11: return 'Double Play'
-    case 12: return 'Foul Out'
+    case 12: return 'Out (foul out)'
     default: return 'Out (fly out)'
   }
+}
+
+// ─── Realistic scheme ────────────────────────────────────────────────────────
+// Maps specific dice *combinations* (not sums) to outcomes.
+// Reach-base combinations (7 of 36 ≈ 19.4%):
+//   1-1 → Home Run   |  6-6 → Triple   |  1-2 → Double
+//   1-3, 2-2, 5-6 → Single            |  4-4 → Walk
+// All other 29 combinations → Out (randomly varied)
+
+function sortedPair(a: number, b: number): string {
+  return a <= b ? `${a}-${b}` : `${b}-${a}`
+}
+
+const RANDOM_OUT_TYPES: Outcome[] = [
+  'Out (ground out)',
+  'Out (fly out)',
+  'Out (foul out)',
+  'Out (strikeout)',
+]
+
+function randomOut(hasRunner: boolean, outs: number): Outcome {
+  // Double play only when there is a runner on base and fewer than 2 outs
+  if (hasRunner && outs < 2 && Math.random() < 0.15) {
+    return 'Double Play'
+  }
+  return RANDOM_OUT_TYPES[Math.floor(Math.random() * RANDOM_OUT_TYPES.length)]
+}
+
+export function outcomeForDice(
+  d1: number,
+  d2: number,
+  hasRunner: boolean,
+  outs: number,
+): Outcome {
+  // Check doubles first (order-independent)
+  if (d1 === 1 && d2 === 1) return 'Home Run'
+  if (d1 === 6 && d2 === 6) return 'Triple'
+  if (d1 === 4 && d2 === 4) return 'Walk'
+  if (d1 === 2 && d2 === 2) return 'Single'
+
+  // Order-independent pair check
+  const pair = sortedPair(d1, d2)
+  switch (pair) {
+    case '1-2': return 'Double'
+    case '1-3': return 'Single'
+    case '5-6': return 'Single'
+    default: return randomOut(hasRunner, outs)
+  }
+}
+
+export function resolveOutcome(
+  roll: [number, number],
+  scheme: DiceScheme,
+  hasRunner: boolean,
+  outs: number,
+): Outcome {
+  if (scheme === 'realistic') {
+    return outcomeForDice(roll[0], roll[1], hasRunner, outs)
+  }
+  return outcomeForRoll(roll[0] + roll[1])
 }
 
 function scoreRuns(state: GameState, runs: number): GameState {
@@ -55,7 +115,7 @@ function applyBaserunning(state: GameState, outcome: Outcome): BaserunningResult
     case 'Out (fly out)':
     case 'Out (ground out)':
     case 'Out (strikeout)':
-    case 'Foul Out':
+    case 'Out (foul out)':
       s.outs++
       break
 
@@ -214,39 +274,51 @@ function logEntry(state: GameState, label: string, roll: [number, number], runsS
   const runsSuffix = runsScored === 1
     ? ' · 1 run scores'
     : runsScored > 1
-    ? ` · ${runsScored} runs score`
-    : ''
-  return `${half}${state.inning} · ${team} · Roll ${roll[0] + roll[1]} (${roll[0]}+${roll[1]}) → ${label}${runsSuffix}`
+      ? ` · ${runsScored} runs score`
+      : ''
+  const rollLabel = state.diceScheme === 'realistic'
+    ? `🎲 ${roll[0]}-${roll[1]}`
+    : `Roll ${roll[0] + roll[1]} (${roll[0]}+${roll[1]})`
+  return `${half}${state.inning} · ${team} · ${rollLabel} → ${label}${runsSuffix}`
 }
 
 // ─── Initial state ────────────────────────────────────────────────────────────
 
-export const initialState: GameState = {
-  inning: 1,
-  halfInning: 'top',
-  outs: 0,
-  bases: [false, false, false],
-  score: { away: [0], home: [0] },
-  hits: { away: 0, home: 0 },
-  gameOver: false,
-  currentRoll: null,
-  lastResult: null,
-  log: [],
-  isRolling: false,
+export function createInitialState(scheme: DiceScheme = 'classic'): GameState {
+  return {
+    inning: 1,
+    halfInning: 'top',
+    outs: 0,
+    bases: [false, false, false],
+    score: { away: [0], home: [0] },
+    hits: { away: 0, home: 0 },
+    gameOver: false,
+    currentRoll: null,
+    lastResult: null,
+    log: [],
+    isRolling: false,
+    diceScheme: scheme,
+  }
 }
+
+export const initialState: GameState = createInitialState()
 
 // ─── Reducer ─────────────────────────────────────────────────────────────────
 
 export function gameReducer(state: GameState, action: GameAction): GameState {
   switch (action.type) {
     case 'NEW_GAME':
-      return initialState
+      return createInitialState(action.scheme ?? state.diceScheme)
+
+    case 'SET_SCHEME':
+      return { ...state, diceScheme: action.scheme }
 
     case 'ROLL': {
       if (state.gameOver || state.isRolling) return state
 
       const roll = rollDice()
-      const outcome = outcomeForRoll(roll[0] + roll[1])
+      const hasRunner = state.bases[0] || state.bases[1] || state.bases[2]
+      const outcome = resolveOutcome(roll, state.diceScheme, hasRunner, state.outs)
       const label = effectiveOutcome(state, outcome)
       const { state: nextState, runsScored } = applyBaserunning(state, outcome)
       const entry = logEntry(state, label, roll, runsScored)
@@ -255,9 +327,9 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
       const isHit = outcome === 'Single' || outcome === 'Double' || outcome === 'Triple' || outcome === 'Home Run'
       const hits = isHit
         ? {
-            away: state.halfInning === 'top'    ? state.hits.away + 1 : state.hits.away,
-            home: state.halfInning === 'bottom' ? state.hits.home + 1 : state.hits.home,
-          }
+          away: state.halfInning === 'top' ? state.hits.away + 1 : state.hits.away,
+          home: state.halfInning === 'bottom' ? state.hits.home + 1 : state.hits.home,
+        }
         : state.hits
 
       let s: GameState = { ...nextState, currentRoll: roll, lastResult: label, log: [...state.log, entry], isRolling: false, hits }

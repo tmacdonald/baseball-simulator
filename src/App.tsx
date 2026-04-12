@@ -1,5 +1,6 @@
 import { useReducer, useCallback, useState, useEffect } from 'react'
 import { gameReducer, initialState } from './gameReducer'
+import type { DiceScheme } from './types'
 import Scoreboard from './components/Scoreboard'
 import Diamond from './components/Diamond'
 import Dice from './components/Dice'
@@ -30,6 +31,10 @@ export default function App() {
     setOverlayOpen(false)
   }, [])
 
+  const handleSchemeChange = useCallback((scheme: DiceScheme) => {
+    dispatch({ type: 'SET_SCHEME', scheme })
+  }, [])
+
   const awayTotal = state.score.away.reduce((a, b) => a + b, 0)
   const homeTotal = state.score.home.reduce((a, b) => a + b, 0)
 
@@ -41,14 +46,36 @@ export default function App() {
           <span className={styles.logoIcon}>⚾</span>
           <h1 className={styles.logoTitle}>Dice Baseball</h1>
         </div>
-        <div className={styles.headerScore}>
-          <span className={styles.teamScore}>
-            Away <strong>{awayTotal}</strong>
-          </span>
-          <span className={styles.scoreSep}>–</span>
-          <span className={styles.teamScore}>
-            <strong>{homeTotal}</strong> Home
-          </span>
+        <div className={styles.headerRight}>
+          <div className={styles.schemeToggle} id="scheme-toggle">
+            <button
+              id="scheme-classic-btn"
+              className={`${styles.schemeBtn} ${state.diceScheme === 'classic' ? styles.schemeBtnActive : ''}`}
+              onClick={() => handleSchemeChange('classic')}
+              disabled={state.log.length > 0 && !state.gameOver}
+              title="Sum-based: higher batting average"
+            >
+              Classic
+            </button>
+            <button
+              id="scheme-realistic-btn"
+              className={`${styles.schemeBtn} ${state.diceScheme === 'realistic' ? styles.schemeBtnActive : ''}`}
+              onClick={() => handleSchemeChange('realistic')}
+              disabled={state.log.length > 0 && !state.gameOver}
+              title="Combination-based: realistic batting average"
+            >
+              Realistic
+            </button>
+          </div>
+          <div className={styles.headerScore}>
+            <span className={styles.teamScore}>
+              Away <strong>{awayTotal}</strong>
+            </span>
+            <span className={styles.scoreSep}>–</span>
+            <span className={styles.teamScore}>
+              <strong>{homeTotal}</strong> Home
+            </span>
+          </div>
         </div>
       </header>
 

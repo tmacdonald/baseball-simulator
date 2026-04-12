@@ -57,6 +57,51 @@
   font-size: 1.1rem;
 }
 
+.headerRight {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
+
+.schemeToggle {
+  display: flex;
+  background: var(--surface-2);
+  border-radius: 20px;
+  padding: 3px;
+  gap: 2px;
+  border: 1px solid var(--surface-3);
+}
+
+.schemeBtn {
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  padding: 5px 14px;
+  border-radius: 16px;
+  background: transparent;
+  color: var(--muted);
+  transition: all 0.2s ease;
+}
+
+.schemeBtn:hover:not(:disabled) {
+  color: var(--text-dim);
+}
+
+.schemeBtn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.schemeBtnActive {
+  background: var(--green-dark);
+  color: #fff;
+  box-shadow: 0 2px 8px var(--green-glow);
+}
+
+.schemeBtnActive:hover:not(:disabled) {
+  color: #fff;
+}
+
 /* ── Main panel ──────────────────────────────────── */
 .main {
   display: flex;

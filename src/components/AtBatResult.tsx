@@ -6,7 +6,7 @@ interface Props {
 }
 
 const HITS = new Set<Outcome>(['Single', 'Double', 'Triple'])
-const OUTS = new Set<Outcome>(['Out (fly out)', 'Out (ground out)', 'Out (strikeout)', 'Foul Out', 'Double Play'])
+const OUTS = new Set<Outcome>(['Out (fly out)', 'Out (ground out)', 'Out (strikeout)', 'Out (foul out)', 'Double Play'])
 
 function colorClass(result: string | null): string {
   if (!result) return ''

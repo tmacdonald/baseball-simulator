@@ -1,3 +1,5 @@
+export type DiceScheme = 'classic' | 'realistic'
+
 export type Outcome =
   | 'Home Run'
   | 'Triple'
@@ -6,9 +8,9 @@ export type Outcome =
   | 'Out (fly out)'
   | 'Out (ground out)'
   | 'Out (strikeout)'
+  | 'Out (foul out)'
   | 'Walk'
   | 'Double Play'
-  | 'Foul Out'
 
 export interface GameState {
   inning: number
@@ -22,6 +24,10 @@ export interface GameState {
   lastResult: string | null
   log: string[]
   isRolling: boolean
+  diceScheme: DiceScheme
 }
 
-export type GameAction = { type: 'ROLL' } | { type: 'NEW_GAME' }
+export type GameAction =
+  | { type: 'ROLL' }
+  | { type: 'NEW_GAME'; scheme?: DiceScheme }
+  | { type: 'SET_SCHEME'; scheme: DiceScheme }
