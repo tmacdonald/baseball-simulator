@@ -1,0 +1,71 @@
+.scoreboard {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.85rem;
+  background: var(--surface);
+  border-radius: var(--radius);
+  overflow: hidden;
+  border: 1px solid var(--surface-3);
+}
+
+.scoreboard th,
+.scoreboard td {
+  padding: 8px 10px;
+  text-align: center;
+  min-width: 28px;
+}
+
+.scoreboard thead th {
+  background: var(--surface-2);
+  color: var(--muted);
+  font-size: 0.75rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-weight: 600;
+}
+
+.scoreboard thead th.activeCol {
+  color: var(--amber);
+}
+
+.scoreboard tbody tr {
+  border-top: 1px solid var(--surface-3);
+}
+
+.scoreboard tbody td {
+  color: var(--text);
+  font-weight: 400;
+}
+
+.scoreboard tbody td.teamName {
+  color: var(--text-dim);
+  text-align: left;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  padding-left: 14px;
+}
+
+.scoreboard tbody td.activeCol {
+  background: rgba(251, 191, 36, 0.08);
+  color: var(--amber);
+  font-weight: 600;
+}
+
+.scoreboard tbody td.totalRuns {
+  color: var(--green);
+  font-weight: 700;
+  font-size: 0.95rem;
+  border-left: 1px solid var(--surface-3);
+}
+
+.scoreboard tbody td.totalHits {
+  color: var(--blue);
+  font-weight: 600;
+  font-size: 0.95rem;
+  border-left: 1px solid var(--surface-3);
+}
+
+.scoreboard tbody td.unplayed {
+  color: var(--muted);
+}

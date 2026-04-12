@@ -1,0 +1,250 @@
+.app {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 24px 20px 40px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+/* ── Header ──────────────────────────────────────── */
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 20px;
+  border-bottom: 1px solid var(--surface-3);
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.logoIcon {
+  font-size: 2rem;
+  filter: drop-shadow(0 0 10px rgba(74, 222, 128, 0.4));
+}
+
+.logoTitle {
+  font-size: 1.6rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  background: linear-gradient(135deg, var(--green) 0%, #86efac 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.headerScore {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 1rem;
+  color: var(--text-dim);
+}
+
+.teamScore strong {
+  color: var(--text);
+  font-size: 1.3rem;
+  font-weight: 700;
+  font-family: 'JetBrains Mono', monospace;
+}
+
+.scoreSep {
+  color: var(--muted);
+  font-size: 1.1rem;
+}
+
+/* ── Main panel ──────────────────────────────────── */
+.main {
+  display: flex;
+  gap: 24px;
+  align-items: center;
+  justify-content: center;
+}
+
+.fieldSection {
+  background: var(--surface);
+  border: 1px solid var(--surface-3);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  flex: 0 0 auto;
+}
+
+.centerSection {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+}
+
+.sectionLabel {
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+/* ── Scoreboard ─────────────────────────────────── */
+.scoreboardSection {
+  width: 100%;
+}
+
+/* ── Log ────────────────────────────────────────── */
+.logSection {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* ── Game Over Overlay ──────────────────────────── */
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  animation: appFadeIn 0.4s ease both;
+}
+
+.overlayCard {
+  position: relative;
+  background: var(--surface);
+  border: 1px solid var(--surface-3);
+  border-radius: 24px;
+  padding: 48px 56px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  box-shadow: 0 24px 80px rgba(0,0,0,0.6), 0 0 0 1px var(--surface-2);
+  animation: cardPop 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.overlayIcon {
+  font-size: 3.5rem;
+  animation: spin 0.6s ease 0.1s both;
+}
+
+.overlayTitle {
+  font-size: 2.2rem;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  background: linear-gradient(135deg, var(--amber), #fde68a);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.overlayScore {
+  font-size: 1.8rem;
+  font-weight: 700;
+  font-family: 'JetBrains Mono', monospace;
+  color: var(--text);
+}
+
+.overlayResult {
+  font-size: 1rem;
+  color: var(--text-dim);
+}
+
+.overlayClose {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  background: transparent;
+  color: var(--muted);
+  font-size: 1.1rem;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s, color 0.15s;
+}
+
+.overlayClose:hover {
+  background: var(--surface-3);
+  color: var(--text);
+}
+
+.overlayActions {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  margin-top: 8px;
+  width: 100%;
+}
+
+.overlayBtn {
+  width: 100%;
+  background: var(--green-dark);
+  color: #fff;
+  font-size: 1rem;
+  font-weight: 700;
+  padding: 12px 40px;
+  border-radius: 50px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  box-shadow: 0 4px 20px var(--green-glow);
+  transition: background 0.2s, transform 0.15s;
+}
+
+.overlayBtn:hover {
+  background: #15803d;
+  transform: translateY(-2px);
+}
+
+.overlayReviewBtn {
+  background: transparent;
+  color: var(--text-dim);
+  font-size: 0.85rem;
+  font-weight: 500;
+  padding: 8px 20px;
+  border-radius: 50px;
+  border: 1.5px solid var(--surface-3);
+  transition: border-color 0.2s, color 0.2s;
+}
+
+.overlayReviewBtn:hover {
+  border-color: var(--muted);
+  color: var(--text);
+}
+
+@keyframes cardPop {
+  from { opacity: 0; transform: scale(0.85) translateY(20px); }
+  to   { opacity: 1; transform: scale(1)    translateY(0);    }
+}
+
+@keyframes spin {
+  from { transform: rotate(-30deg) scale(0.5); opacity: 0; }
+  to   { transform: rotate(0deg)   scale(1);   opacity: 1; }
+}
+
+/* ── Responsive ─────────────────────────────────── */
+@media (max-width: 660px) {
+  .main {
+    flex-direction: column;
+  }
+  .fieldSection {
+    width: 100%;
+  }
+  .header {
+    flex-direction: column;
+    gap: 12px;
+    align-items: flex-start;
+  }
+}
