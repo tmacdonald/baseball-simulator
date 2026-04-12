@@ -1,7 +1,7 @@
 import styles from './Diamond.module.css'
 
 interface Props {
-  bases: [boolean, boolean, boolean] // 1st, 2nd, 3rd
+  bases: [number | null, number | null, number | null] // 1st, 2nd, 3rd
 }
 
 // SVG coordinate layout (200×200 viewBox)
@@ -16,7 +16,11 @@ const POSITIONS = {
 const BASE_SIZE = 14
 
 export default function Diamond({ bases }: Props) {
-  const [on1st, on2nd, on3rd] = bases
+  const [on1stVal, on2ndVal, on3rdVal] = bases
+  
+  const on1st = on1stVal !== null
+  const on2nd = on2ndVal !== null
+  const on3rd = on3rdVal !== null
 
   return (
     <div className={styles.field} style={{ width: 200, height: 200 }}>

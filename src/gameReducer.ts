@@ -102,13 +102,14 @@ function scoreRuns(state: GameState, runs: number): GameState {
 
 interface BaserunningResult {
   state: GameState
-  runsScored: number
+  scoringRunners: number[]
 }
 
 // ─── Baserunning ─────────────────────────────────────────────────────────────
 
-function applyBaserunning(state: GameState, outcome: Outcome): BaserunningResult {
-  let s = { ...state, bases: [...state.bases] as [boolean, boolean, boolean] }
+function applyBaserunning(state: GameState, outcome: Outcome, batterIndex: number): BaserunningResult {
+  let s = { ...state, bases: [...state.bases] as [number | null, number | null, number | null] }
+  let scoringRunners: number[] = []
   let runsScored = 0
 
   switch (outcome) {
@@ -120,11 +121,11 @@ function applyBaserunning(state: GameState, outcome: Outcome): BaserunningResult
       break
 
     case 'Double Play': {
-      const hasRunner = s.bases[0] || s.bases[1] || s.bases[2]
+      const hasRunner = s.bases[0] !== null || s.bases[1] !== null || s.bases[2] !== null
       if (hasRunner && s.outs < 2) {
-        if (s.bases[2]) s.bases[2] = false
-        else if (s.bases[1]) s.bases[1] = false
-        else s.bases[0] = false
+        if (s.bases[2] !== null) s.bases[2] = null
+        else if (s.bases[1] !== null) s.bases[1] = null
+        else s.bases[0] = null
         s.outs += 2
       } else {
         s.outs++
@@ -133,61 +134,60 @@ function applyBaserunning(state: GameState, outcome: Outcome): BaserunningResult
     }
 
     case 'Walk': {
-      if (s.bases[0] && s.bases[1] && s.bases[2]) {
+      if (s.bases[0] !== null && s.bases[1] !== null && s.bases[2] !== null) {
+        scoringRunners.push(s.bases[2])
         runsScored += 1
-        s = scoreRuns(s, 1)
-      } else if (s.bases[0] && s.bases[1]) {
-        s.bases[2] = true
-      } else if (s.bases[0]) {
-        s.bases[1] = true
+      } else if (s.bases[0] !== null && s.bases[1] !== null) {
+        s.bases[2] = s.bases[1]
+      } else if (s.bases[0] !== null) {
+        s.bases[1] = s.bases[0]
       }
-      s.bases[0] = true
+      s.bases[0] = batterIndex
+      if (runsScored > 0) s = scoreRuns(s, runsScored)
       break
     }
 
     case 'Single': {
-      const runs = s.bases[2] ? 1 : 0
+      if (s.bases[2] !== null) { scoringRunners.push(s.bases[2]); runsScored++ }
       s.bases[2] = s.bases[1]
       s.bases[1] = s.bases[0]
-      s.bases[0] = true
-      if (runs > 0) { runsScored += runs; s = scoreRuns(s, runs) }
+      s.bases[0] = batterIndex
+      if (runsScored > 0) s = scoreRuns(s, runsScored)
       break
     }
 
     case 'Double': {
-      let runs = 0
-      if (s.bases[2]) runs++
-      if (s.bases[1]) runs++
+      if (s.bases[2] !== null) { scoringRunners.push(s.bases[2]); runsScored++ }
+      if (s.bases[1] !== null) { scoringRunners.push(s.bases[1]); runsScored++ }
       s.bases[2] = s.bases[0]
-      s.bases[1] = true
-      s.bases[0] = false
-      if (runs > 0) { runsScored += runs; s = scoreRuns(s, runs) }
+      s.bases[1] = batterIndex
+      s.bases[0] = null
+      if (runsScored > 0) s = scoreRuns(s, runsScored)
       break
     }
 
     case 'Triple': {
-      let runs = 0
-      if (s.bases[0]) runs++
-      if (s.bases[1]) runs++
-      if (s.bases[2]) runs++
-      s.bases = [false, false, true]
-      if (runs > 0) { runsScored += runs; s = scoreRuns(s, runs) }
+      if (s.bases[0] !== null) { scoringRunners.push(s.bases[0]); runsScored++ }
+      if (s.bases[1] !== null) { scoringRunners.push(s.bases[1]); runsScored++ }
+      if (s.bases[2] !== null) { scoringRunners.push(s.bases[2]); runsScored++ }
+      s.bases = [null, null, batterIndex]
+      if (runsScored > 0) s = scoreRuns(s, runsScored)
       break
     }
 
     case 'Home Run': {
-      let runs = 1
-      if (s.bases[0]) runs++
-      if (s.bases[1]) runs++
-      if (s.bases[2]) runs++
-      s.bases = [false, false, false]
-      runsScored += runs
-      s = scoreRuns(s, runs)
+      if (s.bases[0] !== null) { scoringRunners.push(s.bases[0]); runsScored++ }
+      if (s.bases[1] !== null) { scoringRunners.push(s.bases[1]); runsScored++ }
+      if (s.bases[2] !== null) { scoringRunners.push(s.bases[2]); runsScored++ }
+      scoringRunners.push(batterIndex)
+      runsScored++
+      s.bases = [null, null, null]
+      s = scoreRuns(s, runsScored)
       break
     }
   }
 
-  return { state: s, runsScored }
+  return { state: s, scoringRunners }
 }
 
 // ─── Inning transitions ──────────────────────────────────────────────────────
@@ -200,7 +200,7 @@ function homeTotal(score: GameState['score']): number {
 }
 
 function advanceInning(state: GameState): GameState {
-  let s = { ...state, outs: 0, bases: [false, false, false] as [boolean, boolean, boolean] }
+  let s = { ...state, outs: 0, bases: [null, null, null] as [number | null, number | null, number | null] }
 
   if (s.halfInning === 'top') {
     // Switch to bottom half
@@ -260,7 +260,7 @@ function checkSkipBottom9(state: GameState): GameState {
 
 function effectiveOutcome(state: GameState, outcome: Outcome): string {
   if (outcome === 'Double Play') {
-    const hasRunner = state.bases[0] || state.bases[1] || state.bases[2]
+    const hasRunner = state.bases[0] !== null || state.bases[1] !== null || state.bases[2] !== null
     if (!hasRunner || state.outs >= 2) return 'Out (ground out)'
   }
   return outcome
@@ -315,6 +315,7 @@ function createEmptyStats(): PlayerStats[] {
     walks: 0,
     hr: 0,
     rbi: 0,
+    runs: 0,
   }))
 }
 
@@ -323,7 +324,7 @@ export function createInitialState(scheme: DiceScheme = 'classic'): GameState {
     inning: 1,
     halfInning: 'top',
     outs: 0,
-    bases: [false, false, false],
+    bases: [null, null, null],
     score: { away: [0], home: [0] },
     hits: { away: 0, home: 0 },
     gameOver: false,
@@ -353,11 +354,18 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
     case 'ROLL': {
       if (state.gameOver || state.isRolling) return state
 
+      const team = state.halfInning === 'top' ? 'away' : 'home'
+      const batterIdx = state.batterIndex[team]
+      const currentStats = state.playerStats[team]
+      const newStats = [...currentStats]
+      const statsForBatter = { ...newStats[batterIdx] }
+
       const roll = rollDice()
-      const hasRunner = state.bases[0] || state.bases[1] || state.bases[2]
+      const hasRunner = state.bases[0] !== null || state.bases[1] !== null || state.bases[2] !== null
       const outcome = resolveOutcome(roll, state.diceScheme, hasRunner, state.outs)
       const label = effectiveOutcome(state, outcome)
-      const { state: nextState, runsScored } = applyBaserunning(state, outcome)
+      const { state: nextState, scoringRunners } = applyBaserunning(state, outcome, batterIdx)
+      const runsScored = scoringRunners.length
       const entry = logEntry(state, label, roll, runsScored, nextState.score)
 
       // Track hits
@@ -371,11 +379,6 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
 
       // Player stats updates
       const isWalk = outcome === 'Walk'
-      const team = state.halfInning === 'top' ? 'away' : 'home'
-      const batterIdx = state.batterIndex[team]
-      const currentStats = state.playerStats[team]
-      const newStats = [...currentStats]
-      const statsForBatter = { ...newStats[batterIdx] }
 
       if (isWalk) {
         statsForBatter.walks++
@@ -393,6 +396,11 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
       }
       
       newStats[batterIdx] = statsForBatter
+
+      // Increment runs for scoring runners
+      for (const rIdx of scoringRunners) {
+        newStats[rIdx] = { ...newStats[rIdx], runs: newStats[rIdx].runs + 1 }
+      }
 
       const playerStats = {
         ...state.playerStats,

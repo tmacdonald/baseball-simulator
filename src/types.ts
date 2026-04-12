@@ -24,13 +24,14 @@ export interface PlayerStats {
   walks: number
   hr: number
   rbi: number
+  runs: number
 }
 
 export interface GameState {
   inning: number
   halfInning: 'top' | 'bottom'
   outs: number
-  bases: [boolean, boolean, boolean] // 1st, 2nd, 3rd
+  bases: [number | null, number | null, number | null] // 1st, 2nd, 3rd (batter index)
   score: { away: number[]; home: number[] }
   hits: { away: number; home: number }
   gameOver: boolean

@@ -55,6 +55,7 @@ export default function Roster({ rosters, playerStats, batterIndex, halfInning }
               <th className={styles.posCol}>Pos</th>
               <th className={styles.nameCol}>Name</th>
               <th>AB</th>
+              <th>R</th>
               <th>H</th>
               <th>BB</th>
               <th>HR</th>
@@ -74,6 +75,7 @@ export default function Roster({ rosters, playerStats, batterIndex, halfInning }
                     {p.name} {isCurrent && <span className={styles.batterIcon}>⚾</span>}
                   </td>
                   <td>{s.ab}</td>
+                  <td>{s.runs}</td>
                   <td>{s.hits}</td>
                   <td>{s.walks}</td>
                   <td>{s.hr}</td>
