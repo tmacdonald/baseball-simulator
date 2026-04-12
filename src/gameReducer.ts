@@ -1,4 +1,4 @@
-import type { GameState, GameAction, Outcome, DiceScheme } from './types'
+import type { GameState, GameAction, Outcome, DiceScheme, Player, PlayerStats } from './types'
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
 
@@ -296,6 +296,28 @@ function logEntry(
 
 // ─── Initial state ────────────────────────────────────────────────────────────
 
+const DEFAULT_ROSTER: Player[] = [
+  { number: 1, name: 'Pitcher', position: 'P' },
+  { number: 2, name: 'Catcher', position: 'C' },
+  { number: 3, name: 'First Baseman', position: '1B' },
+  { number: 4, name: 'Second Baseman', position: '2B' },
+  { number: 5, name: 'Third Baseman', position: '3B' },
+  { number: 6, name: 'Shortstop', position: 'SS' },
+  { number: 7, name: 'Left Fielder', position: 'LF' },
+  { number: 8, name: 'Center Fielder', position: 'CF' },
+  { number: 9, name: 'Right Fielder', position: 'RF' },
+]
+
+function createEmptyStats(): PlayerStats[] {
+  return Array.from({ length: 9 }, () => ({
+    ab: 0,
+    hits: 0,
+    walks: 0,
+    hr: 0,
+    rbi: 0,
+  }))
+}
+
 export function createInitialState(scheme: DiceScheme = 'classic'): GameState {
   return {
     inning: 1,
@@ -310,6 +332,9 @@ export function createInitialState(scheme: DiceScheme = 'classic'): GameState {
     log: [],
     isRolling: false,
     diceScheme: scheme,
+    rosters: { away: [...DEFAULT_ROSTER], home: [...DEFAULT_ROSTER] },
+    playerStats: { away: createEmptyStats(), home: createEmptyStats() },
+    batterIndex: { away: 0, home: 0 },
   }
 }
 
@@ -344,7 +369,52 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
         }
         : state.hits
 
-      let s: GameState = { ...nextState, currentRoll: roll, lastResult: label, log: [...state.log, entry], isRolling: false, hits }
+      // Player stats updates
+      const isWalk = outcome === 'Walk'
+      const team = state.halfInning === 'top' ? 'away' : 'home'
+      const batterIdx = state.batterIndex[team]
+      const currentStats = state.playerStats[team]
+      const newStats = [...currentStats]
+      const statsForBatter = { ...newStats[batterIdx] }
+
+      if (isWalk) {
+        statsForBatter.walks++
+      } else {
+        statsForBatter.ab++
+      }
+      if (isHit) {
+        statsForBatter.hits++
+        if (outcome === 'Home Run') {
+          statsForBatter.hr++
+        }
+      }
+      if (runsScored > 0) {
+        statsForBatter.rbi += runsScored
+      }
+      
+      newStats[batterIdx] = statsForBatter
+
+      const playerStats = {
+        ...state.playerStats,
+        [team]: newStats,
+      }
+
+      // advance batter index
+      const newBatterIndex = {
+        ...state.batterIndex,
+        [team]: (batterIdx + 1) % 9,
+      }
+
+      let s: GameState = { 
+        ...nextState, 
+        currentRoll: roll, 
+        lastResult: label, 
+        log: [...state.log, entry], 
+        isRolling: false, 
+        hits,
+        playerStats,
+        batterIndex: newBatterIndex,
+      }
 
       // Walk-off check before processing outs
       s = checkWalkOff(s)

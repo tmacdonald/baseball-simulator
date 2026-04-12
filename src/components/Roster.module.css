@@ -1,0 +1,117 @@
+.rosterContainer {
+  background-color: var(--surface-bg, #1e293b);
+  border: 1px solid var(--border-color, #334155);
+  border-radius: 8px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.tabs {
+  display: flex;
+  background-color: rgba(0, 0, 0, 0.2);
+  border-bottom: 1px solid var(--border-color, #334155);
+}
+
+.tabBtn {
+  flex: 1;
+  background: none;
+  border: none;
+  padding: 0.75rem 1rem;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #94a3b8;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  outline: none;
+}
+
+.tabBtn:hover {
+  color: #f8fafc;
+  background-color: rgba(255, 255, 255, 0.05);
+}
+
+.activeTab {
+  color: #f8fafc;
+  background-color: var(--surface-bg, #1e293b);
+  border-bottom: 2px solid #3b82f6;
+}
+
+.tableWrapper {
+  overflow-x: auto;
+}
+
+.rosterTable {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+  text-align: right;
+}
+
+.rosterTable th {
+  padding: 0.75rem 0.5rem;
+  color: #94a3b8;
+  font-weight: 500;
+  border-bottom: 2px solid var(--border-color, #334155);
+}
+
+.rosterTable td {
+  padding: 0.5rem;
+  border-bottom: 1px solid var(--border-color, #1e293b);
+  color: #f8fafc;
+}
+
+.rosterTable .numCol,
+.rosterTable .posCol,
+.rosterTable .nameCol {
+  text-align: left;
+}
+
+.numCol {
+  width: 2rem;
+  color: #64748b !important;
+}
+
+.posCol {
+  width: 2.5rem;
+  font-weight: 600;
+  color: #3b82f6 !important;
+}
+
+.nameCol {
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.rosterTable tbody tr {
+  transition: background-color 0.2s ease;
+}
+
+.rosterTable tbody tr:hover {
+  background-color: rgba(255, 255, 255, 0.03);
+}
+
+.rosterTable tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.currentBatter {
+  background-color: rgba(59, 130, 246, 0.2) !important;
+}
+
+.currentBatter td {
+  font-weight: 600;
+}
+
+.batterIcon {
+  font-size: 0.8rem;
+  margin-left: 0.5rem;
+  display: inline-block;
+  animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+  0% { opacity: 0.5; }
+  50% { opacity: 1; }
+  100% { opacity: 0.5; }
+}

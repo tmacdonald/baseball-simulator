@@ -12,6 +12,20 @@ export type Outcome =
   | 'Walk'
   | 'Double Play'
 
+export interface Player {
+  number: number
+  name: string
+  position: string
+}
+
+export interface PlayerStats {
+  ab: number
+  hits: number
+  walks: number
+  hr: number
+  rbi: number
+}
+
 export interface GameState {
   inning: number
   halfInning: 'top' | 'bottom'
@@ -25,6 +39,9 @@ export interface GameState {
   log: string[]
   isRolling: boolean
   diceScheme: DiceScheme
+  rosters: { away: Player[]; home: Player[] }
+  playerStats: { away: PlayerStats[]; home: PlayerStats[] }
+  batterIndex: { away: number; home: number }
 }
 
 export type GameAction =

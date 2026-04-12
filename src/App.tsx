@@ -7,6 +7,7 @@ import Dice from './components/Dice'
 import AtBatResult from './components/AtBatResult'
 import GameControls from './components/GameControls'
 import GameLog from './components/GameLog'
+import Roster from './components/Roster'
 import styles from './App.module.css'
 
 export default function App() {
@@ -111,6 +112,17 @@ export default function App() {
           inning={state.inning}
           halfInning={state.halfInning}
           gameOver={state.gameOver}
+        />
+      </section>
+
+      {/* Roster & Stats */}
+      <section className={styles.logSection} aria-label="Team Rosters">
+        <div className={styles.sectionLabel}>Team Rosters</div>
+        <Roster
+          rosters={state.rosters}
+          playerStats={state.playerStats}
+          batterIndex={state.batterIndex}
+          halfInning={state.halfInning}
         />
       </section>
 
