@@ -268,7 +268,13 @@ function effectiveOutcome(state: GameState, outcome: Outcome): string {
 
 // ─── Log helper ──────────────────────────────────────────────────────────────
 
-function logEntry(state: GameState, label: string, roll: [number, number], runsScored: number): string {
+function logEntry(
+  state: GameState,
+  label: string,
+  roll: [number, number],
+  runsScored: number,
+  newScore: GameState['score'],
+): string {
   const half = state.halfInning === 'top' ? '▲' : '▼'
   const team = state.halfInning === 'top' ? 'Away' : 'Home'
   const runsSuffix = runsScored === 1
@@ -276,10 +282,16 @@ function logEntry(state: GameState, label: string, roll: [number, number], runsS
     : runsScored > 1
       ? ` · ${runsScored} runs score`
       : ''
+  let scoreSuffix = ''
+  if (runsScored > 0) {
+    const away = newScore.away.reduce((a, b) => a + b, 0)
+    const home = newScore.home.reduce((a, b) => a + b, 0)
+    scoreSuffix = ` · Away ${away} – Home ${home}`
+  }
   const rollLabel = state.diceScheme === 'realistic'
     ? `🎲 ${roll[0]}-${roll[1]}`
     : `Roll ${roll[0] + roll[1]} (${roll[0]}+${roll[1]})`
-  return `${half}${state.inning} · ${team} · ${rollLabel} → ${label}${runsSuffix}`
+  return `${half}${state.inning} · ${team} · ${rollLabel} → ${label}${runsSuffix}${scoreSuffix}`
 }
 
 // ─── Initial state ────────────────────────────────────────────────────────────
@@ -321,7 +333,7 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
       const outcome = resolveOutcome(roll, state.diceScheme, hasRunner, state.outs)
       const label = effectiveOutcome(state, outcome)
       const { state: nextState, runsScored } = applyBaserunning(state, outcome)
-      const entry = logEntry(state, label, roll, runsScored)
+      const entry = logEntry(state, label, roll, runsScored, nextState.score)
 
       // Track hits
       const isHit = outcome === 'Single' || outcome === 'Double' || outcome === 'Triple' || outcome === 'Home Run'
