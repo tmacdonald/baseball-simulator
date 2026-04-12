@@ -1,14 +1,43 @@
+.rootContainer {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.mainHeader {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 24px 20px;
+  border-bottom: 1px solid var(--surface-3);
+  background: var(--bg);
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+}
+
+.dualGameWrapper {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: 40px;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 40px 20px;
+}
+
 .app {
-  max-width: 900px;
-  margin: 0 auto;
-  padding: 24px 20px 40px;
+  flex: 1;
+  min-width: 380px;
+  max-width: 800px;
   display: flex;
   flex-direction: column;
   gap: 24px;
 }
 
 /* ── Header ──────────────────────────────────────── */
-.header {
+.instanceHeader {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -60,6 +89,8 @@
 .headerRight {
   display: flex;
   align-items: center;
+  justify-content: space-between;
+  width: 100%;
   gap: 18px;
 }
 

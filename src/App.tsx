@@ -9,8 +9,7 @@ import GameControls from './components/GameControls'
 import GameLog from './components/GameLog'
 import Roster from './components/Roster'
 import styles from './App.module.css'
-
-export default function App() {
+export function GameInstance() {
   const [state, dispatch] = useReducer(gameReducer, initialState)
   const [overlayOpen, setOverlayOpen] = useState(false)
 
@@ -42,15 +41,10 @@ export default function App() {
   return (
     <div className={styles.app}>
       {/* Header */}
-      <header className={styles.header}>
-        <div className={styles.logo}>
-          <span className={styles.logoIcon}>⚾</span>
-          <h1 className={styles.logoTitle}>Dice Baseball</h1>
-        </div>
+      <header className={styles.instanceHeader}>
         <div className={styles.headerRight}>
-          <div className={styles.schemeToggle} id="scheme-toggle">
+          <div className={styles.schemeToggle}>
             <button
-              id="scheme-classic-btn"
               className={`${styles.schemeBtn} ${state.diceScheme === 'classic' ? styles.schemeBtnActive : ''}`}
               onClick={() => handleSchemeChange('classic')}
               disabled={state.log.length > 0 && !state.gameOver}
@@ -59,7 +53,6 @@ export default function App() {
               Classic
             </button>
             <button
-              id="scheme-realistic-btn"
               className={`${styles.schemeBtn} ${state.diceScheme === 'realistic' ? styles.schemeBtnActive : ''}`}
               onClick={() => handleSchemeChange('realistic')}
               disabled={state.log.length > 0 && !state.gameOver}
@@ -188,6 +181,23 @@ export default function App() {
           </div>
         </div>
       )}
+    </div>
+  )
+}
+
+export default function App() {
+  return (
+    <div className={styles.rootContainer}>
+      <header className={styles.mainHeader}>
+        <div className={styles.logo}>
+          <span className={styles.logoIcon}>⚾</span>
+          <h1 className={styles.logoTitle}>Dice Baseball</h1>
+        </div>
+      </header>
+      <div className={styles.dualGameWrapper}>
+        <GameInstance />
+        <GameInstance />
+      </div>
     </div>
   )
 }
