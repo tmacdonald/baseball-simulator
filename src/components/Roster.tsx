@@ -30,6 +30,13 @@ export default function Roster({ rosters, playerStats, batterIndex, halfInning }
     return avg.toFixed(3).replace(/^0/, '')
   }
 
+  const totalAB = stats.reduce((sum, s) => sum + s.ab, 0)
+  const totalH = stats.reduce((sum, s) => sum + s.hits, 0)
+  const totalR = stats.reduce((sum, s) => sum + s.runs, 0)
+  const totalBB = stats.reduce((sum, s) => sum + s.walks, 0)
+  const totalHR = stats.reduce((sum, s) => sum + s.hr, 0)
+  const totalRBI = stats.reduce((sum, s) => sum + s.rbi, 0)
+
   return (
     <div className={styles.rosterContainer}>
       <div className={styles.tabs}>
@@ -85,6 +92,18 @@ export default function Roster({ rosters, playerStats, batterIndex, halfInning }
               )
             })}
           </tbody>
+          <tfoot>
+            <tr className={styles.totalsRow}>
+              <td colSpan={3} className={styles.nameCol} style={{ textAlign: 'right', paddingRight: '1rem' }}>Totals</td>
+              <td>{totalAB}</td>
+              <td>{totalH}</td>
+              <td>{totalR}</td>
+              <td>{totalBB}</td>
+              <td>{totalHR}</td>
+              <td>{totalRBI}</td>
+              <td>{renderAvg(totalAB, totalH)}</td>
+            </tr>
+          </tfoot>
         </table>
       </div>
     </div>
