@@ -1,9 +1,10 @@
 import type { Outcome, DiceScheme } from './types'
 
-export function rollDice(): [number, number] {
+export function rollDice(scheme: DiceScheme = 'classic'): [number, number] {
+  const sides = scheme === 'd20' ? 20 : 6
   return [
-    Math.floor(Math.random() * 6) + 1,
-    Math.floor(Math.random() * 6) + 1,
+    Math.floor(Math.random() * sides) + 1,
+    Math.floor(Math.random() * sides) + 1,
   ]
 }
 
@@ -62,6 +63,29 @@ export function outcomeForDice(
   }
 }
 
+export function outcomeForD20(
+  d1: number,
+  d2: number,
+  hasRunner: boolean,
+  outs: number,
+): Outcome {
+  if (d1 <= 15) {
+    // Out Roll Map
+    if (d2 <= 5) return 'Out (strikeout)'
+    if (d2 <= 10) return 'Out (ground out)'
+    if (d2 <= 15) return 'Out (fly out)'
+    if (d2 <= 18) return 'Out (foul out)'
+    return (hasRunner && outs < 2) ? 'Double Play' : 'Out (ground out)'
+  } else {
+    // Hit/Safe Roll Map
+    if (d2 <= 5) return 'Walk'
+    if (d2 <= 13) return 'Single'
+    if (d2 <= 17) return 'Double'
+    if (d2 === 18) return 'Triple'
+    return 'Home Run'
+  }
+}
+
 export function resolveOutcome(
   roll: [number, number],
   scheme: DiceScheme,
@@ -70,6 +94,9 @@ export function resolveOutcome(
 ): Outcome {
   if (scheme === 'realistic') {
     return outcomeForDice(roll[0], roll[1], hasRunner, outs)
+  }
+  if (scheme === 'd20') {
+    return outcomeForD20(roll[0], roll[1], hasRunner, outs)
   }
   return outcomeForRoll(roll[0] + roll[1])
 }

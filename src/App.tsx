@@ -23,7 +23,7 @@ export function GameInstance() {
   const handleRoll = useCallback(() => {
     if (state.gameOver || isRolling) return
 
-    const roll = rollDice()
+    const roll = rollDice(diceScheme)
     setCurrentRoll(roll)
     
     const hasRunner = state.bases[0] !== null || state.bases[1] !== null || state.bases[2] !== null
@@ -40,7 +40,7 @@ export function GameInstance() {
     const startHalf = s.halfInning
 
     while (!s.gameOver && s.inning === startInning && s.halfInning === startHalf) {
-      const roll = rollDice()
+      const roll = rollDice(diceScheme)
       const hasRunner = s.bases[0] !== null || s.bases[1] !== null || s.bases[2] !== null
       const outcome = resolveOutcome(roll, diceScheme, hasRunner, s.outs)
       s = gameReducer(s, { type: 'PLAY', outcome })
@@ -84,6 +84,14 @@ export function GameInstance() {
             >
               Realistic
             </button>
+            <button
+              className={`${styles.schemeBtn} ${diceScheme === 'd20' ? styles.schemeBtnActive : ''}`}
+              onClick={() => handleSchemeChange('d20')}
+              disabled={state.log.length > 0 && !state.gameOver}
+              title="D20-based: classic tabletop mechanics"
+            >
+              D20
+            </button>
           </div>
           <div className={styles.headerScore}>
             <span className={styles.teamScore}>
@@ -112,7 +120,7 @@ export function GameInstance() {
         {/* Center: Dice + result */}
         <section className={styles.centerSection} aria-label="Dice roll">
           <AtBatResult result={state.lastResult} />
-          <Dice roll={currentRoll} isRolling={isRolling} />
+          <Dice roll={currentRoll} isRolling={isRolling} faces={diceScheme === 'd20' ? 20 : 6} />
           <GameControls
             inning={state.inning}
             halfInning={state.halfInning}

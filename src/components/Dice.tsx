@@ -14,9 +14,18 @@ const PIP_LAYOUTS: Record<number, boolean[]> = {
 interface DieProps {
   face: number
   rolling: boolean
+  faces?: number
 }
 
-function Die({ face, rolling }: DieProps) {
+function Die({ face, rolling, faces = 6 }: DieProps) {
+  if (faces > 6) {
+    return (
+      <div className={`${styles.die} ${rolling ? styles.rolling : ''}`} aria-label={`Die showing ${face}`}>
+        <div className={styles.numberFace}>{face}</div>
+      </div>
+    )
+  }
+
   const pips = PIP_LAYOUTS[face] ?? PIP_LAYOUTS[1]
   return (
     <div className={`${styles.die} ${rolling ? styles.rolling : ''}`} aria-label={`Die showing ${face}`}>
@@ -30,25 +39,26 @@ function Die({ face, rolling }: DieProps) {
 interface Props {
   roll: [number, number] | null
   isRolling: boolean
+  faces?: number
 }
 
-export default function Dice({ roll, isRolling }: Props) {
+export default function Dice({ roll, isRolling, faces = 6 }: Props) {
   if (!roll && !isRolling) {
     return (
       <div className={styles.diceContainer}>
-        <div className={styles.placeholder}>⚄</div>
-        <div className={styles.placeholder}>⚄</div>
+        <div className={styles.placeholder}>{faces > 6 ? '20' : '⚄'}</div>
+        <div className={styles.placeholder}>{faces > 6 ? '20' : '⚄'}</div>
       </div>
     )
   }
 
-  const face1 = isRolling ? Math.floor(Math.random() * 6) + 1 : (roll?.[0] ?? 1)
-  const face2 = isRolling ? Math.floor(Math.random() * 6) + 1 : (roll?.[1] ?? 1)
+  const face1 = isRolling ? Math.floor(Math.random() * faces) + 1 : (roll?.[0] ?? 1)
+  const face2 = isRolling ? Math.floor(Math.random() * faces) + 1 : (roll?.[1] ?? 1)
 
   return (
     <div className={styles.diceContainer}>
-      <Die face={face1} rolling={isRolling} />
-      <Die face={face2} rolling={isRolling} />
+      <Die face={face1} rolling={isRolling} faces={faces} />
+      <Die face={face2} rolling={isRolling} faces={faces} />
     </div>
   )
 }

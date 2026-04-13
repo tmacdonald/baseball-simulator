@@ -1,4 +1,4 @@
-export type DiceScheme = 'classic' | 'realistic'
+export type DiceScheme = 'classic' | 'realistic' | 'd20'
 
 export type Outcome =
   | 'Home Run'

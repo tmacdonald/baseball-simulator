@@ -46,6 +46,19 @@
   display: none;
 }
 
+.numberFace {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 32px;
+  font-weight: 900;
+  color: #1a1a1a;
+  text-shadow: 0 1px 1px rgba(255, 255, 255, 0.6);
+  font-family: inherit;
+}
+
 .placeholder {
   width: 72px;
   height: 72px;
