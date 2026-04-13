@@ -79,7 +79,10 @@ export default function Roster({ rosters, playerStats, batterIndex, halfInning }
                   <td className={styles.numCol}>{i + 1}</td>
                   <td className={styles.posCol}>{p.position}</td>
                   <td className={styles.nameCol}>
-                    {p.name} {isCurrent && <span className={styles.batterIcon}>⚾</span>}
+                    {p.name} 
+                    {p.bonus === 'plus_one' && <span className={styles.bonusBadge} title="+1 Die Modifier">🎲+1</span>} 
+                    {p.bonus === 'advantage' && <span className={styles.bonusBadge} title="Advantage (Roll twice, take max)">🎲Adv</span>} 
+                    {isCurrent && <span className={styles.batterIcon}>⚾</span>}
                   </td>
                   <td>{s.ab}</td>
                   <td>{s.hits}</td>

@@ -1,11 +1,16 @@
 import type { Outcome, DiceScheme } from './types'
 
-export function rollDice(scheme: DiceScheme = 'classic'): [number, number] {
+export function rollDice(scheme: DiceScheme = 'classic', bonus?: 'plus_one' | 'advantage'): [number, number] {
   const sides = scheme === 'd20' ? 20 : 6
-  return [
-    Math.floor(Math.random() * sides) + 1,
-    Math.floor(Math.random() * sides) + 1,
-  ]
+  let d1 = Math.floor(Math.random() * sides) + 1
+  
+  if (bonus === 'plus_one') {
+    d1 = Math.min(sides, d1 + 1)
+  } else if (bonus === 'advantage') {
+    d1 = Math.max(d1, Math.floor(Math.random() * sides) + 1)
+  }
+
+  return [d1, Math.floor(Math.random() * sides) + 1]
 }
 
 export function outcomeForRoll(sum: number): Outcome {

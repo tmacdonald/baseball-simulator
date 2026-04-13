@@ -16,6 +16,7 @@ export interface Player {
   number: number
   name: string
   position: string
+  bonus?: 'plus_one' | 'advantage'
 }
 
 export interface PlayerStats {

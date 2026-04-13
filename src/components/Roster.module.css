@@ -116,6 +116,17 @@
   100% { opacity: 0.5; }
 }
 
+.bonusBadge {
+  font-size: 0.75rem;
+  margin-left: 0.5rem;
+  color: #fbbf24;
+  font-weight: 700;
+  background-color: rgba(251, 191, 36, 0.1);
+  padding: 0.1rem 0.3rem;
+  border-radius: 4px;
+  cursor: help;
+}
+
 .totalsRow {
   border-top: 2px solid var(--border-color, #334155);
   background-color: rgba(0, 0, 0, 0.2);

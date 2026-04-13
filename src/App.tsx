@@ -23,7 +23,10 @@ export function GameInstance() {
   const handleRoll = useCallback(() => {
     if (state.gameOver || isRolling) return
 
-    const roll = rollDice(diceScheme)
+    const team = state.halfInning === 'top' ? 'away' : 'home'
+    const batterIdx = state.batterIndex[team]
+    const batter = state.rosters[team][batterIdx]
+    const roll = rollDice(diceScheme, batter.bonus)
     setCurrentRoll(roll)
     
     const hasRunner = state.bases[0] !== null || state.bases[1] !== null || state.bases[2] !== null
@@ -40,7 +43,10 @@ export function GameInstance() {
     const startHalf = s.halfInning
 
     while (!s.gameOver && s.inning === startInning && s.halfInning === startHalf) {
-      const roll = rollDice(diceScheme)
+      const team = s.halfInning === 'top' ? 'away' : 'home'
+      const batterIdx = s.batterIndex[team]
+      const batter = s.rosters[team][batterIdx]
+      const roll = rollDice(diceScheme, batter.bonus)
       const hasRunner = s.bases[0] !== null || s.bases[1] !== null || s.bases[2] !== null
       const outcome = resolveOutcome(roll, diceScheme, hasRunner, s.outs)
       s = gameReducer(s, { type: 'PLAY', outcome })

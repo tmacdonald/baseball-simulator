@@ -244,6 +244,18 @@ const DEFAULT_ROSTER: Player[] = [
   { number: 9, name: 'Right Fielder', position: 'RF' },
 ]
 
+function assignBonuses(roster: Player[]): Player[] {
+  const newRoster = [...roster]
+  let p1 = Math.floor(Math.random() * 9)
+  let p2 = Math.floor(Math.random() * 9)
+  while (p2 === p1) {
+    p2 = Math.floor(Math.random() * 9)
+  }
+  newRoster[p1] = { ...newRoster[p1], bonus: 'plus_one' }
+  newRoster[p2] = { ...newRoster[p2], bonus: 'advantage' }
+  return newRoster
+}
+
 function createEmptyStats(): PlayerStats[] {
   return Array.from({ length: 9 }, () => ({
     ab: 0,
@@ -266,7 +278,7 @@ export function createInitialState(): GameState {
     gameOver: false,
     lastResult: null,
     log: [],
-    rosters: { away: [...DEFAULT_ROSTER], home: [...DEFAULT_ROSTER] },
+    rosters: { away: assignBonuses(DEFAULT_ROSTER), home: assignBonuses(DEFAULT_ROSTER) },
     playerStats: { away: createEmptyStats(), home: createEmptyStats() },
     batterIndex: { away: 0, home: 0 },
   }
