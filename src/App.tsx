@@ -1,4 +1,4 @@
-import { useReducer, useCallback, useState } from 'react'
+import { useReducer, useCallback, useState, useEffect } from 'react'
 import { gameReducer, initialState } from './gameReducer'
 import { rollDice, resolveOutcome } from './diceLogic'
 import type { DiceScheme } from './types'
@@ -9,16 +9,35 @@ import AtBatResult from './components/AtBatResult'
 import GameControls from './components/GameControls'
 import GameLog from './components/GameLog'
 import Roster from './components/Roster'
+import CareerStats from './components/CareerStats'
+import { getCareerStats, saveGameStats } from './statsStorage'
+import type { CareerStatsData } from './statsStorage'
 import styles from './App.module.css'
 
 export function GameInstance() {
   const [state, dispatch] = useReducer(gameReducer, initialState)
   const [diceScheme, setDiceScheme] = useState<DiceScheme>('d20')
   const [currentRoll, setCurrentRoll] = useState<[number, number] | null>(null)
-  
+
   // We keep isRolling just to support the Dice UI or potential future UI delays,
   // but currently we do logic synchronously.
   const [isRolling, setIsRolling] = useState(false)
+
+  const [careerStats, setCareerStats] = useState<CareerStatsData | null>(null)
+  const [hasSavedStats, setHasSavedStats] = useState(false)
+
+  // Save stats when game is over
+  useEffect(() => {
+    if (state.gameOver && !hasSavedStats) {
+      saveGameStats(state.playerStats)
+      setCareerStats(getCareerStats())
+      setHasSavedStats(true)
+    } else if (!state.gameOver && hasSavedStats) {
+      // Reset when a new game starts
+      setHasSavedStats(false)
+      setCareerStats(null)
+    }
+  }, [state.gameOver, hasSavedStats, state.playerStats])
 
   const handleRoll = useCallback(() => {
     if (state.gameOver || isRolling) return
@@ -28,10 +47,10 @@ export function GameInstance() {
     const batter = state.rosters[team][batterIdx]
     const roll = rollDice(diceScheme, batter.bonus)
     setCurrentRoll(roll)
-    
+
     const hasRunner = state.bases[0] !== null || state.bases[1] !== null || state.bases[2] !== null
     const outcome = resolveOutcome(roll, diceScheme, hasRunner, state.outs)
-    
+
     dispatch({ type: 'PLAY', outcome })
   }, [state.bases, state.outs, state.gameOver, diceScheme, isRolling])
 
@@ -135,9 +154,9 @@ export function GameInstance() {
         {/* Left: Diamond + context */}
         <section className={styles.fieldSection} aria-label="Field">
           <div className={styles.sectionLabel}>Field</div>
-          <Diamond 
-            bases={state.bases} 
-            roster={state.halfInning === 'top' ? state.rosters.away : state.rosters.home} 
+          <Diamond
+            bases={state.bases}
+            roster={state.halfInning === 'top' ? state.rosters.away : state.rosters.home}
             batter={state.halfInning === 'top' ? state.batterIndex.away : state.batterIndex.home}
           />
         </section>
@@ -187,6 +206,17 @@ export function GameInstance() {
           halfInning={state.halfInning}
         />
       </section>
+
+      {/* Career Stats */}
+      {state.gameOver && careerStats && (
+        <section className={styles.logSection} aria-label="Career Stats">
+          <div className={styles.sectionLabel}>Career Stats</div>
+          <CareerStats
+            rosters={state.rosters}
+            careerStats={careerStats}
+          />
+        </section>
+      )}
 
     </div>
   )
