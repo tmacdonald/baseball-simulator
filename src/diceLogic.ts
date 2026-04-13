@@ -69,16 +69,17 @@ export function outcomeForD20(
   hasRunner: boolean,
   outs: number,
 ): Outcome {
-  if (d1 <= 15) {
+  if (d1 <= 14) {
     // Out Roll Map
     if (d2 <= 5) return 'Out (strikeout)'
     if (d2 <= 10) return 'Out (ground out)'
     if (d2 <= 15) return 'Out (fly out)'
     if (d2 <= 18) return 'Out (foul out)'
     return (hasRunner && outs < 2) ? 'Double Play' : 'Out (ground out)'
+  } else if (d1 === 15) {
+    return 'Walk'
   } else {
-    // Hit/Safe Roll Map
-    if (d2 <= 5) return 'Walk'
+    // Hit Roll Map
     if (d2 <= 13) return 'Single'
     if (d2 <= 17) return 'Double'
     if (d2 === 18) return 'Triple'
