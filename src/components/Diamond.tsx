@@ -4,6 +4,7 @@ import type { Player } from '../types'
 interface Props {
   bases: [number | null, number | null, number | null] // 1st, 2nd, 3rd
   roster?: Player[]
+  batter?: number | null
 }
 
 // SVG coordinate layout (200×200 viewBox)
@@ -17,7 +18,7 @@ const POSITIONS = {
 
 const BASE_SIZE = 14
 
-export default function Diamond({ bases, roster }: Props) {
+export default function Diamond({ bases, roster, batter }: Props) {
   const [on1stVal, on2ndVal, on3rdVal] = bases
   
   const on1st = on1stVal !== null
@@ -81,7 +82,7 @@ export default function Diamond({ bases, roster }: Props) {
           </text>
         )}
 
-        {/* Home plate (pentagon-ish as a small rotated rect) */}
+        {/* Home plate */}
         <rect
           className={styles.homePlate}
           x={POSITIONS.home.cx - 9}
@@ -90,6 +91,12 @@ export default function Diamond({ bases, roster }: Props) {
           height={18}
           transform={`rotate(45, ${POSITIONS.home.cx}, ${POSITIONS.home.cy})`}
         />
+        {batter !== undefined && batter !== null && <circle className={styles.runner} cx={POSITIONS.home.cx} cy={POSITIONS.home.cy} r={7} />}
+        {batter !== undefined && batter !== null && roster && roster[batter] && (
+          <text x={POSITIONS.home.cx} y={POSITIONS.home.cy + 18} className={styles.runnerText} dominantBaseline="hanging" textAnchor="middle">
+            {roster[batter].position} (#{roster[batter].number})
+          </text>
+        )}
       </svg>
     </div>
   )

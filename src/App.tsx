@@ -105,6 +105,7 @@ export function GameInstance() {
           <Diamond 
             bases={state.bases} 
             roster={state.halfInning === 'top' ? state.rosters.away : state.rosters.home} 
+            batter={state.halfInning === 'top' ? state.batterIndex.away : state.batterIndex.home}
           />
         </section>
 
