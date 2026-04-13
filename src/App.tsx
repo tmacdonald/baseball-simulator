@@ -32,6 +32,24 @@ export function GameInstance() {
     dispatch({ type: 'PLAY', outcome })
   }, [state.bases, state.outs, state.gameOver, diceScheme, isRolling])
 
+  const handleSimulateInning = useCallback(() => {
+    if (state.gameOver || isRolling) return
+
+    let s = state
+    const startInning = s.inning
+    const startHalf = s.halfInning
+
+    while (!s.gameOver && s.inning === startInning && s.halfInning === startHalf) {
+      const roll = rollDice()
+      const hasRunner = s.bases[0] !== null || s.bases[1] !== null || s.bases[2] !== null
+      const outcome = resolveOutcome(roll, diceScheme, hasRunner, s.outs)
+      s = gameReducer(s, { type: 'PLAY', outcome })
+    }
+
+    setCurrentRoll(null)
+    dispatch({ type: 'REPLACE_STATE', state: s })
+  }, [state, diceScheme, isRolling])
+
   const handleNewGame = useCallback(() => {
     setCurrentRoll(null)
     dispatch({ type: 'NEW_GAME' })
@@ -101,6 +119,7 @@ export function GameInstance() {
             isRolling={isRolling}
             gameOver={state.gameOver}
             onRoll={handleRoll}
+            onSimulateInning={handleSimulateInning}
             onNewGame={handleNewGame}
           />
         </section>

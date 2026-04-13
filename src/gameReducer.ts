@@ -281,6 +281,9 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
     case 'NEW_GAME':
       return createInitialState()
 
+    case 'REPLACE_STATE':
+      return action.state
+
     case 'PLAY': {
       if (state.gameOver) return state
 

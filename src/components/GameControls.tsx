@@ -7,12 +7,13 @@ interface Props {
   isRolling: boolean
   gameOver: boolean
   onRoll: () => void
+  onSimulateInning: () => void
   onNewGame: () => void
 }
 
 const OUT_DOTS = ['○', '○', '○']
 
-export default function GameControls({ inning, halfInning, outs, isRolling, gameOver, onRoll, onNewGame }: Props) {
+export default function GameControls({ inning, halfInning, outs, isRolling, gameOver, onRoll, onSimulateInning, onNewGame }: Props) {
   const half = halfInning === 'top' ? '▲' : '▼'
   const outDisplay = OUT_DOTS.map((d, i) => (i < outs ? '●' : d)).join(' ')
 
@@ -24,15 +25,27 @@ export default function GameControls({ inning, halfInning, outs, isRolling, game
       </div>
       <div className={styles.buttons}>
         {!gameOver && (
-          <button
-            id="roll-btn"
-            className={styles.rollBtn}
-            onClick={onRoll}
-            disabled={isRolling}
-            aria-label="Roll the dice"
-          >
-            {isRolling ? 'Rolling…' : '🎲 Roll'}
-          </button>
+          <>
+            <button
+              id="roll-btn"
+              className={styles.rollBtn}
+              onClick={onRoll}
+              disabled={isRolling}
+              aria-label="Simulate at bat"
+            >
+              {isRolling ? 'Simulating…' : '⚾ Simulate at bat'}
+            </button>
+            <button
+              id="simulate-inning-btn"
+              className={styles.rollBtn}
+              onClick={onSimulateInning}
+              disabled={isRolling}
+              aria-label="Simulate inning"
+              style={{ marginLeft: '8px' }}
+            >
+              ⏩ Simulate inning
+            </button>
+          </>
         )}
         {gameOver && (
           <button
