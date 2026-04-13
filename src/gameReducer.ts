@@ -268,30 +268,68 @@ function effectiveOutcome(state: GameState, outcome: Outcome): string {
 
 // ─── Log helper ──────────────────────────────────────────────────────────────
 
+function formatAction(batterName: string, label: string): string {
+  switch (label) {
+    case 'Home Run': return `${batterName} hits a home run`
+    case 'Triple': return `${batterName} hits a triple`
+    case 'Double': return `${batterName} hits a double`
+    case 'Single': return `${batterName} hits a single`
+    case 'Walk': return `${batterName} draws a walk`
+    case 'Out (fly out)': return `${batterName} flies out`
+    case 'Out (ground out)': return `${batterName} grounds out`
+    case 'Out (strikeout)': return `${batterName} strikes out`
+    case 'Out (foul out)': return `${batterName} fouls out`
+    case 'Double Play': return `${batterName} hits into a double play`
+    default: return `${batterName}: ${label}`
+  }
+}
+
 function logEntry(
-  state: GameState,
+  prevState: GameState,
+  nextState: GameState,
+  batterName: string,
   label: string,
   roll: [number, number],
   runsScored: number,
-  newScore: GameState['score'],
 ): string {
-  const half = state.halfInning === 'top' ? '▲' : '▼'
-  const team = state.halfInning === 'top' ? 'Away' : 'Home'
-  const runsSuffix = runsScored === 1
-    ? ' · 1 run scores'
-    : runsScored > 1
-      ? ` · ${runsScored} runs score`
-      : ''
-  let scoreSuffix = ''
-  if (runsScored > 0) {
-    const away = newScore.away.reduce((a, b) => a + b, 0)
-    const home = newScore.home.reduce((a, b) => a + b, 0)
-    scoreSuffix = ` · Away ${away} – Home ${home}`
+  const half = prevState.halfInning === 'top' ? '▲' : '▼'
+  
+  let actionText = formatAction(batterName, label)
+
+  if (runsScored === 1) {
+    if (label.includes('Out') || label === 'Double Play') {
+      actionText += ', but 1 run scores'
+    } else {
+      actionText += ', scoring one'
+    }
+  } else if (runsScored > 1) {
+    const numWords: Record<number, string> = { 2: 'two', 3: 'three', 4: 'four' }
+    if (label.includes('Out') || label === 'Double Play') {
+      actionText += `, but ${runsScored} runs score`
+    } else {
+      actionText += `, scoring ${numWords[runsScored] || runsScored}`
+    }
   }
-  const rollLabel = state.diceScheme === 'realistic'
+
+  if (nextState.outs >= 3) {
+    actionText += ' to end the inning'
+  }
+
+  let finalAction = actionText + '.'
+
+  if (runsScored > 0) {
+    const away = awayTotal(nextState.score)
+    const home = homeTotal(nextState.score)
+    if (away > home) finalAction += ` Away team leads ${away}-${home}.`
+    else if (home > away) finalAction += ` Home team leads ${home}-${away}.`
+    else finalAction += ` Game tied ${away}-${home}.`
+  }
+
+  const rollLabel = prevState.diceScheme === 'realistic'
     ? `🎲 ${roll[0]}-${roll[1]}`
-    : `Roll ${roll[0] + roll[1]} (${roll[0]}+${roll[1]})`
-  return `${half}${state.inning} · ${team} · ${rollLabel} → ${label}${runsSuffix}${scoreSuffix}`
+    : `Roll ${roll[0] + roll[1]}`
+  
+  return `${half}${prevState.inning} · ${rollLabel} → ${finalAction}`
 }
 
 // ─── Initial state ────────────────────────────────────────────────────────────
@@ -366,7 +404,8 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
       const label = effectiveOutcome(state, outcome)
       const { state: nextState, scoringRunners } = applyBaserunning(state, outcome, batterIdx)
       const runsScored = scoringRunners.length
-      const entry = logEntry(state, label, roll, runsScored, nextState.score)
+      const batterName = state.rosters[team][batterIdx].name
+      const entry = logEntry(state, nextState, batterName, label, roll, runsScored)
 
       // Track hits
       const isHit = outcome === 'Single' || outcome === 'Double' || outcome === 'Triple' || outcome === 'Home Run'
