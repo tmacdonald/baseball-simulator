@@ -22,6 +22,9 @@ export interface Player {
 export interface PlayerStats {
   ab: number
   hits: number
+  singles: number
+  doubles: number
+  triples: number
   walks: number
   hr: number
   rbi: number

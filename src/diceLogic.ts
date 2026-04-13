@@ -1,6 +1,6 @@
 import type { Outcome, DiceScheme } from './types'
 
-export function rollDice(scheme: DiceScheme = 'classic', bonus?: 'plus_one' | 'advantage'): [number, number] {
+export function rollDice(scheme: DiceScheme = 'd20', bonus?: 'plus_one' | 'advantage'): [number, number] {
   const sides = scheme === 'd20' ? 20 : 6
   let d1 = Math.floor(Math.random() * sides) + 1
   

@@ -260,6 +260,9 @@ function createEmptyStats(): PlayerStats[] {
   return Array.from({ length: 9 }, () => ({
     ab: 0,
     hits: 0,
+    singles: 0,
+    doubles: 0,
+    triples: 0,
     walks: 0,
     hr: 0,
     rbi: 0,
@@ -331,7 +334,13 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
       }
       if (isHit) {
         statsForBatter.hits++
-        if (outcome === 'Home Run') {
+        if (outcome === 'Single') {
+          statsForBatter.singles++
+        } else if (outcome === 'Double') {
+          statsForBatter.doubles++
+        } else if (outcome === 'Triple') {
+          statsForBatter.triples++
+        } else if (outcome === 'Home Run') {
           statsForBatter.hr++
         }
       }

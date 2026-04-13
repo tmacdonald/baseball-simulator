@@ -8,12 +8,13 @@ interface Props {
   gameOver: boolean
   onRoll: () => void
   onSimulateInning: () => void
+  onSimulateGame: () => void
   onNewGame: () => void
 }
 
 const OUT_DOTS = ['○', '○', '○']
 
-export default function GameControls({ inning, halfInning, outs, isRolling, gameOver, onRoll, onSimulateInning, onNewGame }: Props) {
+export default function GameControls({ inning, halfInning, outs, isRolling, gameOver, onRoll, onSimulateInning, onSimulateGame, onNewGame }: Props) {
   const half = halfInning === 'top' ? '▲' : '▼'
   const outDisplay = OUT_DOTS.map((d, i) => (i < outs ? '●' : d)).join(' ')
 
@@ -44,6 +45,16 @@ export default function GameControls({ inning, halfInning, outs, isRolling, game
               style={{ marginLeft: '8px' }}
             >
               ⏩ Simulate inning
+            </button>
+            <button
+              id="simulate-game-btn"
+              className={styles.rollBtn}
+              onClick={onSimulateGame}
+              disabled={isRolling}
+              aria-label="Simulate game"
+              style={{ marginLeft: '8px' }}
+            >
+              ⏭️ Simulate game
             </button>
           </>
         )}

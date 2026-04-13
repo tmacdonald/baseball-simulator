@@ -30,8 +30,24 @@ export default function Roster({ rosters, playerStats, batterIndex, halfInning }
     return avg.toFixed(3).replace(/^0/, '')
   }
 
+  function renderOBP(ab: number, hits: number, walks: number) {
+    if (ab + walks === 0) return '---'
+    const obp = (hits + walks) / (ab + walks)
+    return obp.toFixed(3).replace(/^0/, '')
+  }
+
+  function renderSLG(ab: number, singles: number, doubles: number, triples: number, hr: number) {
+    if (ab === 0) return '---'
+    const tb = singles + (2 * doubles) + (3 * triples) + (4 * hr)
+    const slg = tb / ab
+    return slg.toFixed(3).replace(/^0/, '')
+  }
+
   const totalAB = stats.reduce((sum, s) => sum + s.ab, 0)
   const totalH = stats.reduce((sum, s) => sum + s.hits, 0)
+  const totalSingles = stats.reduce((sum, s) => sum + s.singles, 0)
+  const totalDoubles = stats.reduce((sum, s) => sum + s.doubles, 0)
+  const totalTriples = stats.reduce((sum, s) => sum + s.triples, 0)
   const totalR = stats.reduce((sum, s) => sum + s.runs, 0)
   const totalBB = stats.reduce((sum, s) => sum + s.walks, 0)
   const totalHR = stats.reduce((sum, s) => sum + s.hr, 0)
@@ -68,6 +84,8 @@ export default function Roster({ rosters, playerStats, batterIndex, halfInning }
               <th>HR</th>
               <th>RBI</th>
               <th>AVG</th>
+              <th>OBP</th>
+              <th>SLG</th>
             </tr>
           </thead>
           <tbody>
@@ -91,6 +109,8 @@ export default function Roster({ rosters, playerStats, batterIndex, halfInning }
                   <td>{s.hr}</td>
                   <td>{s.rbi}</td>
                   <td>{renderAvg(s.ab, s.hits)}</td>
+                  <td>{renderOBP(s.ab, s.hits, s.walks)}</td>
+                  <td>{renderSLG(s.ab, s.singles, s.doubles, s.triples, s.hr)}</td>
                 </tr>
               )
             })}
@@ -105,6 +125,8 @@ export default function Roster({ rosters, playerStats, batterIndex, halfInning }
               <td>{totalHR}</td>
               <td>{totalRBI}</td>
               <td>{renderAvg(totalAB, totalH)}</td>
+              <td>{renderOBP(totalAB, totalH, totalBB)}</td>
+              <td>{renderSLG(totalAB, totalSingles, totalDoubles, totalTriples, totalHR)}</td>
             </tr>
           </tfoot>
         </table>

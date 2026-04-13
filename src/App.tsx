@@ -13,7 +13,7 @@ import styles from './App.module.css'
 
 export function GameInstance() {
   const [state, dispatch] = useReducer(gameReducer, initialState)
-  const [diceScheme, setDiceScheme] = useState<DiceScheme>('classic')
+  const [diceScheme, setDiceScheme] = useState<DiceScheme>('d20')
   const [currentRoll, setCurrentRoll] = useState<[number, number] | null>(null)
   
   // We keep isRolling just to support the Dice UI or potential future UI delays,
@@ -43,6 +43,25 @@ export function GameInstance() {
     const startHalf = s.halfInning
 
     while (!s.gameOver && s.inning === startInning && s.halfInning === startHalf) {
+      const team = s.halfInning === 'top' ? 'away' : 'home'
+      const batterIdx = s.batterIndex[team]
+      const batter = s.rosters[team][batterIdx]
+      const roll = rollDice(diceScheme, batter.bonus)
+      const hasRunner = s.bases[0] !== null || s.bases[1] !== null || s.bases[2] !== null
+      const outcome = resolveOutcome(roll, diceScheme, hasRunner, s.outs)
+      s = gameReducer(s, { type: 'PLAY', outcome })
+    }
+
+    setCurrentRoll(null)
+    dispatch({ type: 'REPLACE_STATE', state: s })
+  }, [state, diceScheme, isRolling])
+
+  const handleSimulateGame = useCallback(() => {
+    if (state.gameOver || isRolling) return
+
+    let s = state
+
+    while (!s.gameOver) {
       const team = s.halfInning === 'top' ? 'away' : 'home'
       const batterIdx = s.batterIndex[team]
       const batter = s.rosters[team][batterIdx]
@@ -135,6 +154,7 @@ export function GameInstance() {
             gameOver={state.gameOver}
             onRoll={handleRoll}
             onSimulateInning={handleSimulateInning}
+            onSimulateGame={handleSimulateGame}
             onNewGame={handleNewGame}
           />
         </section>
@@ -182,7 +202,6 @@ export default function App() {
         </div>
       </header>
       <div className={styles.dualGameWrapper}>
-        <GameInstance />
         <GameInstance />
       </div>
     </div>
