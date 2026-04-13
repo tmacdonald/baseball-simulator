@@ -1,5 +1,6 @@
-import { useReducer, useCallback } from 'react'
+import { useReducer, useCallback, useState } from 'react'
 import { gameReducer, initialState } from './gameReducer'
+import { rollDice, resolveOutcome } from './diceLogic'
 import type { DiceScheme } from './types'
 import Scoreboard from './components/Scoreboard'
 import Diamond from './components/Diamond'
@@ -9,19 +10,35 @@ import GameControls from './components/GameControls'
 import GameLog from './components/GameLog'
 import Roster from './components/Roster'
 import styles from './App.module.css'
+
 export function GameInstance() {
   const [state, dispatch] = useReducer(gameReducer, initialState)
+  const [diceScheme, setDiceScheme] = useState<DiceScheme>('classic')
+  const [currentRoll, setCurrentRoll] = useState<[number, number] | null>(null)
+  
+  // We keep isRolling just to support the Dice UI or potential future UI delays,
+  // but currently we do logic synchronously.
+  const [isRolling, setIsRolling] = useState(false)
 
   const handleRoll = useCallback(() => {
-    dispatch({ type: 'ROLL' })
-  }, [])
+    if (state.gameOver || isRolling) return
+
+    const roll = rollDice()
+    setCurrentRoll(roll)
+    
+    const hasRunner = state.bases[0] !== null || state.bases[1] !== null || state.bases[2] !== null
+    const outcome = resolveOutcome(roll, diceScheme, hasRunner, state.outs)
+    
+    dispatch({ type: 'PLAY', outcome })
+  }, [state.bases, state.outs, state.gameOver, diceScheme, isRolling])
 
   const handleNewGame = useCallback(() => {
+    setCurrentRoll(null)
     dispatch({ type: 'NEW_GAME' })
   }, [])
 
   const handleSchemeChange = useCallback((scheme: DiceScheme) => {
-    dispatch({ type: 'SET_SCHEME', scheme })
+    setDiceScheme(scheme)
   }, [])
 
   const awayTotal = state.score.away.reduce((a, b) => a + b, 0)
@@ -34,7 +51,7 @@ export function GameInstance() {
         <div className={styles.headerRight}>
           <div className={styles.schemeToggle}>
             <button
-              className={`${styles.schemeBtn} ${state.diceScheme === 'classic' ? styles.schemeBtnActive : ''}`}
+              className={`${styles.schemeBtn} ${diceScheme === 'classic' ? styles.schemeBtnActive : ''}`}
               onClick={() => handleSchemeChange('classic')}
               disabled={state.log.length > 0 && !state.gameOver}
               title="Sum-based: higher batting average"
@@ -42,7 +59,7 @@ export function GameInstance() {
               Classic
             </button>
             <button
-              className={`${styles.schemeBtn} ${state.diceScheme === 'realistic' ? styles.schemeBtnActive : ''}`}
+              className={`${styles.schemeBtn} ${diceScheme === 'realistic' ? styles.schemeBtnActive : ''}`}
               onClick={() => handleSchemeChange('realistic')}
               disabled={state.log.length > 0 && !state.gameOver}
               title="Combination-based: realistic batting average"
@@ -76,12 +93,12 @@ export function GameInstance() {
         {/* Center: Dice + result */}
         <section className={styles.centerSection} aria-label="Dice roll">
           <AtBatResult result={state.lastResult} />
-          <Dice roll={state.currentRoll} isRolling={state.isRolling} />
+          <Dice roll={currentRoll} isRolling={isRolling} />
           <GameControls
             inning={state.inning}
             halfInning={state.halfInning}
             outs={state.outs}
-            isRolling={state.isRolling}
+            isRolling={isRolling}
             gameOver={state.gameOver}
             onRoll={handleRoll}
             onNewGame={handleNewGame}

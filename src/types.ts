@@ -35,17 +35,13 @@ export interface GameState {
   score: { away: number[]; home: number[] }
   hits: { away: number; home: number }
   gameOver: boolean
-  currentRoll: [number, number] | null
   lastResult: string | null
   log: string[]
-  isRolling: boolean
-  diceScheme: DiceScheme
   rosters: { away: Player[]; home: Player[] }
   playerStats: { away: PlayerStats[]; home: PlayerStats[] }
   batterIndex: { away: number; home: number }
 }
 
 export type GameAction =
-  | { type: 'ROLL' }
-  | { type: 'NEW_GAME'; scheme?: DiceScheme }
-  | { type: 'SET_SCHEME'; scheme: DiceScheme }
+  | { type: 'PLAY'; outcome: Outcome }
+  | { type: 'NEW_GAME' }
