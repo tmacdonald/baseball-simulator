@@ -1,4 +1,4 @@
-import { useReducer, useCallback, useState, useEffect } from 'react'
+import { useReducer, useCallback } from 'react'
 import { gameReducer, initialState } from './gameReducer'
 import type { DiceScheme } from './types'
 import Scoreboard from './components/Scoreboard'
@@ -11,24 +11,13 @@ import Roster from './components/Roster'
 import styles from './App.module.css'
 export function GameInstance() {
   const [state, dispatch] = useReducer(gameReducer, initialState)
-  const [overlayOpen, setOverlayOpen] = useState(false)
-
-  // Open the overlay whenever the game ends
-  useEffect(() => {
-    if (state.gameOver) setOverlayOpen(true)
-  }, [state.gameOver])
 
   const handleRoll = useCallback(() => {
     dispatch({ type: 'ROLL' })
   }, [])
 
   const handleNewGame = useCallback(() => {
-    setOverlayOpen(false)
     dispatch({ type: 'NEW_GAME' })
-  }, [])
-
-  const handleDismissOverlay = useCallback(() => {
-    setOverlayOpen(false)
   }, [])
 
   const handleSchemeChange = useCallback((scheme: DiceScheme) => {
@@ -128,59 +117,6 @@ export function GameInstance() {
         />
       </section>
 
-      {/* Game Over Overlay */}
-      {state.gameOver && overlayOpen && (
-        <div
-          className={styles.overlay}
-          role="dialog"
-          aria-modal="true"
-          aria-label="Game over"
-          onClick={(e) => { if (e.target === e.currentTarget) handleDismissOverlay() }}
-        >
-          <div className={styles.overlayCard}>
-            <button
-              id="close-overlay-btn"
-              className={styles.overlayClose}
-              onClick={handleDismissOverlay}
-              aria-label="Close and review game"
-            >
-              ✕
-            </button>
-            <div className={styles.overlayIcon}>⚾</div>
-            <h2 className={styles.overlayTitle}>Game Over!</h2>
-            <div className={styles.overlayScore}>
-              {awayTotal > homeTotal
-                ? `Away wins ${awayTotal}–${homeTotal}`
-                : awayTotal < homeTotal
-                ? `Home wins ${homeTotal}–${awayTotal}`
-                : `Tied ${awayTotal}–${homeTotal}`}
-            </div>
-            <p className={styles.overlayResult}>
-              {awayTotal > homeTotal
-                ? '🏆 Away team takes the win!'
-                : awayTotal < homeTotal
-                ? '🏆 Home team takes the win!'
-                : "It's a tie game!"}
-            </p>
-            <div className={styles.overlayActions}>
-              <button
-                id="play-again-btn"
-                className={styles.overlayBtn}
-                onClick={handleNewGame}
-              >
-                Play Again
-              </button>
-              <button
-                id="review-game-btn"
-                className={styles.overlayReviewBtn}
-                onClick={handleDismissOverlay}
-              >
-                Review Game
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   )
 }

@@ -23,23 +23,27 @@ export default function GameControls({ inning, halfInning, outs, isRolling, game
         <span id="outs-indicator" aria-label={`${outs} outs`}>{outDisplay} Outs</span>
       </div>
       <div className={styles.buttons}>
-        <button
-          id="roll-btn"
-          className={styles.rollBtn}
-          onClick={onRoll}
-          disabled={isRolling || gameOver}
-          aria-label="Roll the dice"
-        >
-          {isRolling ? 'Rolling…' : '🎲 Roll'}
-        </button>
-        <button
-          id="new-game-btn"
-          className={styles.newGameBtn}
-          onClick={onNewGame}
-          aria-label="Start a new game"
-        >
-          New Game
-        </button>
+        {!gameOver && (
+          <button
+            id="roll-btn"
+            className={styles.rollBtn}
+            onClick={onRoll}
+            disabled={isRolling}
+            aria-label="Roll the dice"
+          >
+            {isRolling ? 'Rolling…' : '🎲 Roll'}
+          </button>
+        )}
+        {gameOver && (
+          <button
+            id="new-game-btn"
+            className={styles.rollBtn}
+            onClick={onNewGame}
+            aria-label="Start a new game"
+          >
+            New Game
+          </button>
+        )}
       </div>
     </div>
   )
