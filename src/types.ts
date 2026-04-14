@@ -1,4 +1,13 @@
-export type DiceScheme = 'classic' | 'realistic' | 'd20'
+export type DiceSchemeName = 'classic' | 'realistic' | 'd20'
+
+export type PlayerBonus = 'plus_one' | 'advantage'
+
+export interface ProjectedRoll {
+  roll: [number, number]
+  outcome: Outcome
+}
+
+export type DiceScheme = (bonus?: PlayerBonus) => ProjectedRoll
 
 export type Outcome =
   | 'Home Run'
@@ -16,7 +25,7 @@ export interface Player {
   number: number
   name: string
   position: string
-  bonus?: 'plus_one' | 'advantage'
+  bonus?: PlayerBonus
 }
 
 export interface PlayerStats {

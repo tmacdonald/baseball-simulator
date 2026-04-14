@@ -1,7 +1,7 @@
 import { useReducer, useCallback, useState, useEffect } from 'react'
 import { gameReducer, initialState } from './gameReducer'
-import { rollDice, resolveOutcome } from './diceLogic'
-import type { DiceScheme } from './types'
+import { getDiceScheme, resolveOutcome } from './diceLogic'
+import type { DiceSchemeName } from './types'
 import Scoreboard from './components/Scoreboard'
 import Diamond from './components/Diamond'
 import Dice from './components/Dice'
@@ -16,7 +16,7 @@ import styles from './App.module.css'
 
 export function GameInstance() {
   const [state, dispatch] = useReducer(gameReducer, initialState)
-  const [diceScheme, setDiceScheme] = useState<DiceScheme>('d20')
+  const [diceSchemeName, setDiceSchemeName] = useState<DiceSchemeName>('d20')
   const [currentRoll, setCurrentRoll] = useState<[number, number] | null>(null)
 
   // We keep isRolling just to support the Dice UI or potential future UI delays,
@@ -45,14 +45,16 @@ export function GameInstance() {
     const team = state.halfInning === 'top' ? 'away' : 'home'
     const batterIdx = state.batterIndex[team]
     const batter = state.rosters[team][batterIdx]
-    const roll = rollDice(diceScheme, batter.bonus)
+    
+    const schemeFn = getDiceScheme(diceSchemeName)
+    const { roll, outcome: projectedOutcome } = schemeFn(batter.bonus)
     setCurrentRoll(roll)
 
     const hasRunner = state.bases[0] !== null || state.bases[1] !== null || state.bases[2] !== null
-    const outcome = resolveOutcome(roll, diceScheme, hasRunner, state.outs)
+    const outcome = resolveOutcome(projectedOutcome, hasRunner, state.outs)
 
     dispatch({ type: 'PLAY', outcome })
-  }, [state.bases, state.outs, state.gameOver, diceScheme, isRolling])
+  }, [state.bases, state.outs, state.gameOver, diceSchemeName, isRolling])
 
   const handleSimulateInning = useCallback(() => {
     if (state.gameOver || isRolling) return
@@ -65,15 +67,16 @@ export function GameInstance() {
       const team = s.halfInning === 'top' ? 'away' : 'home'
       const batterIdx = s.batterIndex[team]
       const batter = s.rosters[team][batterIdx]
-      const roll = rollDice(diceScheme, batter.bonus)
+      const schemeFn = getDiceScheme(diceSchemeName)
+      const { outcome: projectedOutcome } = schemeFn(batter.bonus)
       const hasRunner = s.bases[0] !== null || s.bases[1] !== null || s.bases[2] !== null
-      const outcome = resolveOutcome(roll, diceScheme, hasRunner, s.outs)
+      const outcome = resolveOutcome(projectedOutcome, hasRunner, s.outs)
       s = gameReducer(s, { type: 'PLAY', outcome })
     }
 
     setCurrentRoll(null)
     dispatch({ type: 'REPLACE_STATE', state: s })
-  }, [state, diceScheme, isRolling])
+  }, [state, diceSchemeName, isRolling])
 
   const handleSimulateGame = useCallback(() => {
     if (state.gameOver || isRolling) return
@@ -84,15 +87,16 @@ export function GameInstance() {
       const team = s.halfInning === 'top' ? 'away' : 'home'
       const batterIdx = s.batterIndex[team]
       const batter = s.rosters[team][batterIdx]
-      const roll = rollDice(diceScheme, batter.bonus)
+      const schemeFn = getDiceScheme(diceSchemeName)
+      const { outcome: projectedOutcome } = schemeFn(batter.bonus)
       const hasRunner = s.bases[0] !== null || s.bases[1] !== null || s.bases[2] !== null
-      const outcome = resolveOutcome(roll, diceScheme, hasRunner, s.outs)
+      const outcome = resolveOutcome(projectedOutcome, hasRunner, s.outs)
       s = gameReducer(s, { type: 'PLAY', outcome })
     }
 
     setCurrentRoll(null)
     dispatch({ type: 'REPLACE_STATE', state: s })
-  }, [state, diceScheme, isRolling])
+  }, [state, diceSchemeName, isRolling])
 
   const handleNewGame = useCallback(() => {
     setCurrentRoll(null)
@@ -105,8 +109,8 @@ export function GameInstance() {
     setHasSavedStats(false)
   }, [])
 
-  const handleSchemeChange = useCallback((scheme: DiceScheme) => {
-    setDiceScheme(scheme)
+  const handleSchemeChange = useCallback((scheme: DiceSchemeName) => {
+    setDiceSchemeName(scheme)
   }, [])
 
   const awayTotal = state.score.away.reduce((a, b) => a + b, 0)
@@ -119,7 +123,7 @@ export function GameInstance() {
         <div className={styles.headerRight}>
           <div className={styles.schemeToggle}>
             <button
-              className={`${styles.schemeBtn} ${diceScheme === 'classic' ? styles.schemeBtnActive : ''}`}
+              className={`${styles.schemeBtn} ${diceSchemeName === 'classic' ? styles.schemeBtnActive : ''}`}
               onClick={() => handleSchemeChange('classic')}
               disabled={state.log.length > 0 && !state.gameOver}
               title="Sum-based: higher batting average"
@@ -127,7 +131,7 @@ export function GameInstance() {
               Classic
             </button>
             <button
-              className={`${styles.schemeBtn} ${diceScheme === 'realistic' ? styles.schemeBtnActive : ''}`}
+              className={`${styles.schemeBtn} ${diceSchemeName === 'realistic' ? styles.schemeBtnActive : ''}`}
               onClick={() => handleSchemeChange('realistic')}
               disabled={state.log.length > 0 && !state.gameOver}
               title="Combination-based: realistic batting average"
@@ -135,7 +139,7 @@ export function GameInstance() {
               Realistic
             </button>
             <button
-              className={`${styles.schemeBtn} ${diceScheme === 'd20' ? styles.schemeBtnActive : ''}`}
+              className={`${styles.schemeBtn} ${diceSchemeName === 'd20' ? styles.schemeBtnActive : ''}`}
               onClick={() => handleSchemeChange('d20')}
               disabled={state.log.length > 0 && !state.gameOver}
               title="D20-based: classic tabletop mechanics"
@@ -177,7 +181,7 @@ export function GameInstance() {
         {/* Center: Dice + result */}
         <section className={styles.centerSection} aria-label="Dice roll">
           <AtBatResult result={state.lastResult} />
-          <Dice roll={currentRoll} isRolling={isRolling} faces={diceScheme === 'd20' ? 20 : 6} />
+          <Dice roll={currentRoll} isRolling={isRolling} faces={diceSchemeName === 'd20' ? 20 : 6} />
           <GameControls
             inning={state.inning}
             halfInning={state.halfInning}

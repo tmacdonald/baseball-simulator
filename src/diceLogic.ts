@@ -1,33 +1,13 @@
-import type { Outcome, DiceScheme } from './types'
+import type { Outcome, DiceScheme, DiceSchemeName, PlayerBonus, ProjectedRoll } from './types'
 
-export function rollDice(scheme: DiceScheme = 'd20', bonus?: 'plus_one' | 'advantage'): [number, number] {
-  const sides = scheme === 'd20' ? 20 : 6
+function rollDiceInternal(sides: number, bonus?: PlayerBonus): [number, number] {
   let d1 = Math.floor(Math.random() * sides) + 1
-  
   if (bonus === 'plus_one') {
     d1 = Math.min(sides, d1 + 1)
   } else if (bonus === 'advantage') {
     d1 = Math.max(d1, Math.floor(Math.random() * sides) + 1)
   }
-
   return [d1, Math.floor(Math.random() * sides) + 1]
-}
-
-export function outcomeForRoll(sum: number): Outcome {
-  switch (sum) {
-    case 2: return 'Home Run'
-    case 3: return 'Triple'
-    case 4: return 'Double'
-    case 5: return 'Single'
-    case 6: return 'Single'
-    case 7: return 'Out (fly out)'
-    case 8: return 'Out (ground out)'
-    case 9: return 'Out (strikeout)'
-    case 10: return 'Walk'
-    case 11: return 'Double Play'
-    case 12: return 'Out (foul out)'
-    default: return 'Out (fly out)'
-  }
 }
 
 function sortedPair(a: number, b: number): string {
@@ -41,68 +21,95 @@ const RANDOM_OUT_TYPES: Outcome[] = [
   'Out (strikeout)',
 ]
 
-function randomOut(hasRunner: boolean, outs: number): Outcome {
-  if (hasRunner && outs < 2 && Math.random() < 0.15) {
-    return 'Double Play'
+export const classicScheme: DiceScheme = (bonus?: PlayerBonus): ProjectedRoll => {
+  const roll = rollDiceInternal(6, bonus)
+  const sum = roll[0] + roll[1]
+  let outcome: Outcome
+  switch (sum) {
+    case 2: outcome = 'Home Run'; break;
+    case 3: outcome = 'Triple'; break;
+    case 4: outcome = 'Double'; break;
+    case 5: outcome = 'Single'; break;
+    case 6: outcome = 'Single'; break;
+    case 7: outcome = 'Out (fly out)'; break;
+    case 8: outcome = 'Out (ground out)'; break;
+    case 9: outcome = 'Out (strikeout)'; break;
+    case 10: outcome = 'Walk'; break;
+    case 11: outcome = 'Double Play'; break;
+    case 12: outcome = 'Out (foul out)'; break;
+    default: outcome = 'Out (fly out)'; break;
   }
-  return RANDOM_OUT_TYPES[Math.floor(Math.random() * RANDOM_OUT_TYPES.length)]
+  return { roll, outcome }
 }
 
-export function outcomeForDice(
-  d1: number,
-  d2: number,
-  hasRunner: boolean,
-  outs: number,
-): Outcome {
-  if (d1 === 1 && d2 === 1) return 'Home Run'
-  if (d1 === 6 && d2 === 6) return 'Triple'
-  if (d1 === 4 && d2 === 4) return 'Walk'
-  if (d1 === 2 && d2 === 2) return 'Single'
+export const realisticScheme: DiceScheme = (bonus?: PlayerBonus): ProjectedRoll => {
+  const roll = rollDiceInternal(6, bonus)
+  const [d1, d2] = roll
+  let outcome: Outcome
 
-  const pair = sortedPair(d1, d2)
-  switch (pair) {
-    case '1-2': return 'Double'
-    case '1-3': return 'Single'
-    case '5-6': return 'Single'
-    default: return randomOut(hasRunner, outs)
+  if (d1 === 1 && d2 === 1) outcome = 'Home Run'
+  else if (d1 === 6 && d2 === 6) outcome = 'Triple'
+  else if (d1 === 4 && d2 === 4) outcome = 'Walk'
+  else if (d1 === 2 && d2 === 2) outcome = 'Single'
+  else {
+    const pair = sortedPair(d1, d2)
+    switch (pair) {
+      case '1-2': outcome = 'Double'; break;
+      case '1-3': outcome = 'Single'; break;
+      case '5-6': outcome = 'Single'; break;
+      default:
+        if (Math.random() < 0.15) {
+          outcome = 'Double Play'
+        } else {
+          outcome = RANDOM_OUT_TYPES[Math.floor(Math.random() * RANDOM_OUT_TYPES.length)]
+        }
+    }
   }
+  return { roll, outcome }
 }
 
-export function outcomeForD20(
-  d1: number,
-  d2: number,
-  hasRunner: boolean,
-  outs: number,
-): Outcome {
+export const d20Scheme: DiceScheme = (bonus?: PlayerBonus): ProjectedRoll => {
+  const roll = rollDiceInternal(20, bonus)
+  const [d1, d2] = roll
+  let outcome: Outcome
+
   if (d1 <= 14) {
     // Out Roll Map
-    if (d2 <= 5) return 'Out (strikeout)'
-    if (d2 <= 10) return 'Out (ground out)'
-    if (d2 <= 15) return 'Out (fly out)'
-    if (d2 <= 18) return 'Out (foul out)'
-    return (hasRunner && outs < 2) ? 'Double Play' : 'Out (ground out)'
+    if (d2 <= 5) outcome = 'Out (strikeout)'
+    else if (d2 <= 10) outcome = 'Out (ground out)'
+    else if (d2 <= 15) outcome = 'Out (fly out)'
+    else if (d2 <= 18) outcome = 'Out (foul out)'
+    else outcome = 'Double Play'
   } else if (d1 === 15) {
-    return 'Walk'
+    outcome = 'Walk'
   } else {
     // Hit Roll Map
-    if (d2 <= 13) return 'Single'
-    if (d2 <= 17) return 'Double'
-    if (d2 === 18) return 'Triple'
-    return 'Home Run'
+    if (d2 <= 13) outcome = 'Single'
+    else if (d2 <= 17) outcome = 'Double'
+    else if (d2 === 18) outcome = 'Triple'
+    else outcome = 'Home Run'
   }
+  return { roll, outcome }
 }
 
 export function resolveOutcome(
-  roll: [number, number],
-  scheme: DiceScheme,
+  projectedOutcome: Outcome,
   hasRunner: boolean,
-  outs: number,
+  outs: number
 ): Outcome {
-  if (scheme === 'realistic') {
-    return outcomeForDice(roll[0], roll[1], hasRunner, outs)
+  if (projectedOutcome === 'Double Play') {
+    if (!hasRunner || outs >= 2) {
+      // Fallback if Double Play is not possible
+      return 'Out (ground out)'
+    }
   }
-  if (scheme === 'd20') {
-    return outcomeForD20(roll[0], roll[1], hasRunner, outs)
+  return projectedOutcome
+}
+
+export function getDiceScheme(name: DiceSchemeName): DiceScheme {
+  switch (name) {
+    case 'classic': return classicScheme
+    case 'realistic': return realisticScheme
+    case 'd20': return d20Scheme
   }
-  return outcomeForRoll(roll[0] + roll[1])
 }
