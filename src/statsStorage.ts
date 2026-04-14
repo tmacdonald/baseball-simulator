@@ -2,7 +2,16 @@ import type { PlayerStats } from './types'
 
 const CAREER_STATS_KEY = 'dice_baseball_career_stats'
 
+export interface TeamStats {
+  wins: number
+  losses: number
+}
+
 export interface CareerStatsData {
+  team: {
+    away: TeamStats
+    home: TeamStats
+  }
   away: PlayerStats[]
   home: PlayerStats[]
 }
@@ -21,16 +30,31 @@ function createEmptyStats(): PlayerStats[] {
   }))
 }
 
+function createEmptyTeamStats(): TeamStats {
+  return { wins: 0, losses: 0 }
+}
+
 export function getCareerStats(): CareerStatsData {
   const data = localStorage.getItem(CAREER_STATS_KEY)
   if (data) {
     try {
-      return JSON.parse(data)
+      const parsed = JSON.parse(data) as CareerStatsData
+      if (!parsed.team) {
+        parsed.team = {
+          away: createEmptyTeamStats(),
+          home: createEmptyTeamStats(),
+        }
+      }
+      return parsed
     } catch (e) {
       console.error('Failed to parse career stats from localStorage', e)
     }
   }
   return {
+    team: {
+      away: createEmptyTeamStats(),
+      home: createEmptyTeamStats(),
+    },
     away: createEmptyStats(),
     home: createEmptyStats(),
   }
@@ -50,13 +74,36 @@ function combinePlayerStats(base: PlayerStats, added: PlayerStats): PlayerStats 
   }
 }
 
-export function saveGameStats(gameStats: { away: PlayerStats[]; home: PlayerStats[] }) {
+export function saveGameStats(
+  gameStats: { away: PlayerStats[]; home: PlayerStats[] },
+  awayRuns: number,
+  homeRuns: number
+) {
   const career = getCareerStats()
   
   const updatedAway = career.away.map((p, i) => combinePlayerStats(p, gameStats.away[i]))
   const updatedHome = career.home.map((p, i) => combinePlayerStats(p, gameStats.home[i]))
   
-  const updatedCareer = { away: updatedAway, home: updatedHome }
+  const newAwayTeam = { ...career.team.away }
+  const newHomeTeam = { ...career.team.home }
+
+  if (awayRuns > homeRuns) {
+    newAwayTeam.wins++
+    newHomeTeam.losses++
+  } else if (homeRuns > awayRuns) {
+    newHomeTeam.wins++
+    newAwayTeam.losses++
+  }
+  
+  const updatedCareer: CareerStatsData = {
+    team: {
+      away: newAwayTeam,
+      home: newHomeTeam,
+    },
+    away: updatedAway,
+    home: updatedHome,
+  }
+  
   localStorage.setItem(CAREER_STATS_KEY, JSON.stringify(updatedCareer))
 }
 

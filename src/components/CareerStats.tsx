@@ -1,10 +1,11 @@
 import { useState } from 'react'
 import type { Player, PlayerStats } from '../types'
+import type { CareerStatsData } from '../statsStorage'
 import styles from './Roster.module.css'
 
 interface Props {
   rosters: { away: Player[]; home: Player[] }
-  careerStats: { away: PlayerStats[]; home: PlayerStats[] }
+  careerStats: CareerStatsData
 }
 
 export default function CareerStats({ rosters, careerStats }: Props) {
@@ -12,6 +13,7 @@ export default function CareerStats({ rosters, careerStats }: Props) {
 
   const roster = activeTab === 'away' ? rosters.away : rosters.home
   const stats = activeTab === 'away' ? careerStats.away : careerStats.home
+  const teamStats = activeTab === 'away' ? careerStats.team.away : careerStats.team.home
 
   function renderAvg(ab: number, hits: number) {
     if (ab === 0) return '---'
@@ -57,6 +59,10 @@ export default function CareerStats({ rosters, careerStats }: Props) {
         >
           Home Career
         </button>
+      </div>
+
+      <div className={styles.teamRecord}>
+        Team Record: <strong>{teamStats.wins} W</strong> - <strong>{teamStats.losses} L</strong>
       </div>
 
       <div className={styles.tableWrapper}>

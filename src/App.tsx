@@ -29,7 +29,9 @@ export function GameInstance() {
   // Save stats when game is over
   useEffect(() => {
     if (state.gameOver && !hasSavedStats) {
-      saveGameStats(state.playerStats)
+      const awayTotal = state.score.away.reduce((a, b) => a + b, 0)
+      const homeTotal = state.score.home.reduce((a, b) => a + b, 0)
+      saveGameStats(state.playerStats, awayTotal, homeTotal)
       setCareerStats(getCareerStats())
       setHasSavedStats(true)
     } else if (!state.gameOver && hasSavedStats) {
