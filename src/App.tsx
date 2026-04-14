@@ -10,7 +10,7 @@ import GameControls from './components/GameControls'
 import GameLog from './components/GameLog'
 import Roster from './components/Roster'
 import CareerStats from './components/CareerStats'
-import { getCareerStats, saveGameStats } from './statsStorage'
+import { getCareerStats, saveGameStats, clearCareerStats } from './statsStorage'
 import type { CareerStatsData } from './statsStorage'
 import styles from './App.module.css'
 
@@ -99,6 +99,12 @@ export function GameInstance() {
     dispatch({ type: 'NEW_GAME' })
   }, [])
 
+  const handleClearStats = useCallback(() => {
+    clearCareerStats()
+    setCareerStats(null)
+    setHasSavedStats(false)
+  }, [])
+
   const handleSchemeChange = useCallback((scheme: DiceScheme) => {
     setDiceScheme(scheme)
   }, [])
@@ -137,6 +143,13 @@ export function GameInstance() {
               D20
             </button>
           </div>
+          <button 
+            className={styles.schemeBtn} 
+            onClick={handleClearStats}
+            title="Clear all career statistics"
+          >
+            Clear Career Stats
+          </button>
           <div className={styles.headerScore}>
             <span className={styles.teamScore}>
               Away <strong>{awayTotal}</strong>

@@ -293,8 +293,11 @@ export const initialState: GameState = createInitialState()
 
 export function gameReducer(state: GameState, action: GameAction): GameState {
   switch (action.type) {
-    case 'NEW_GAME':
-      return createInitialState()
+    case 'NEW_GAME': {
+      const newState = createInitialState()
+      newState.rosters = state.rosters
+      return newState
+    }
 
     case 'REPLACE_STATE':
       return action.state

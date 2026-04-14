@@ -59,3 +59,7 @@ export function saveGameStats(gameStats: { away: PlayerStats[]; home: PlayerStat
   const updatedCareer = { away: updatedAway, home: updatedHome }
   localStorage.setItem(CAREER_STATS_KEY, JSON.stringify(updatedCareer))
 }
+
+export function clearCareerStats() {
+  localStorage.removeItem(CAREER_STATS_KEY)
+}
