@@ -1,4 +1,5 @@
-import type { PlayerStats } from './types'
+import type { PlayerStats, Player } from './types'
+import { generateRoster } from './names'
 
 const CAREER_STATS_KEY = 'dice_baseball_career_stats'
 
@@ -11,6 +12,10 @@ export interface CareerStatsData {
   team: {
     away: TeamStats
     home: TeamStats
+  }
+  rosters: {
+    away: Player[]
+    home: Player[]
   }
   away: PlayerStats[]
   home: PlayerStats[]
@@ -38,26 +43,41 @@ export function getCareerStats(): CareerStatsData {
   const data = localStorage.getItem(CAREER_STATS_KEY)
   if (data) {
     try {
-      const parsed = JSON.parse(data) as CareerStatsData
+      const parsed = JSON.parse(data) as Partial<CareerStatsData>
       if (!parsed.team) {
         parsed.team = {
           away: createEmptyTeamStats(),
           home: createEmptyTeamStats(),
         }
       }
-      return parsed
+      if (!parsed.rosters) {
+        parsed.rosters = {
+          away: generateRoster(),
+          home: generateRoster(),
+        }
+        localStorage.setItem(CAREER_STATS_KEY, JSON.stringify(parsed))
+      }
+      return parsed as CareerStatsData
     } catch (e) {
       console.error('Failed to parse career stats from localStorage', e)
     }
   }
-  return {
+  
+  const defaultStats: CareerStatsData = {
     team: {
       away: createEmptyTeamStats(),
       home: createEmptyTeamStats(),
     },
+    rosters: {
+      away: generateRoster(),
+      home: generateRoster(),
+    },
     away: createEmptyStats(),
     home: createEmptyStats(),
   }
+  
+  localStorage.setItem(CAREER_STATS_KEY, JSON.stringify(defaultStats))
+  return defaultStats
 }
 
 function combinePlayerStats(base: PlayerStats, added: PlayerStats): PlayerStats {
@@ -100,6 +120,7 @@ export function saveGameStats(
       away: newAwayTeam,
       home: newHomeTeam,
     },
+    rosters: career.rosters,
     away: updatedAway,
     home: updatedHome,
   }

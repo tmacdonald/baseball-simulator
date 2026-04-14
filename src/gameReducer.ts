@@ -232,20 +232,8 @@ function logEntry(
 
 // ─── Initial state ────────────────────────────────────────────────────────────
 
-const DEFAULT_ROSTER: Player[] = [
-  { number: 1, name: 'Pitcher', position: 'P' },
-  { number: 2, name: 'Catcher', position: 'C' },
-  { number: 3, name: 'First Baseman', position: '1B' },
-  { number: 4, name: 'Second Baseman', position: '2B' },
-  { number: 5, name: 'Third Baseman', position: '3B' },
-  { number: 6, name: 'Shortstop', position: 'SS' },
-  { number: 7, name: 'Left Fielder', position: 'LF' },
-  { number: 8, name: 'Center Fielder', position: 'CF' },
-  { number: 9, name: 'Right Fielder', position: 'RF' },
-]
-
 function assignBonuses(roster: Player[]): Player[] {
-  const newRoster = [...roster]
+  const newRoster = roster.map(({ bonus, ...rest }) => rest)
   let p1 = Math.floor(Math.random() * 9)
   let p2 = Math.floor(Math.random() * 9)
   while (p2 === p1) {
@@ -270,7 +258,7 @@ function createEmptyStats(): PlayerStats[] {
   }))
 }
 
-export function createInitialState(): GameState {
+export function createInitialState(rosters: { away: Player[]; home: Player[] }): GameState {
   return {
     inning: 1,
     halfInning: 'top',
@@ -281,22 +269,19 @@ export function createInitialState(): GameState {
     gameOver: false,
     lastResult: null,
     log: [],
-    rosters: { away: assignBonuses(DEFAULT_ROSTER), home: assignBonuses(DEFAULT_ROSTER) },
+    rosters: { away: assignBonuses(rosters.away), home: assignBonuses(rosters.home) },
     playerStats: { away: createEmptyStats(), home: createEmptyStats() },
     batterIndex: { away: 0, home: 0 },
   }
 }
-
-export const initialState: GameState = createInitialState()
 
 // ─── Reducer ─────────────────────────────────────────────────────────────────
 
 export function gameReducer(state: GameState, action: GameAction): GameState {
   switch (action.type) {
     case 'NEW_GAME': {
-      const newState = createInitialState()
-      newState.rosters = state.rosters
-      return newState
+      const baseRosters = action.rosters || state.rosters
+      return createInitialState(baseRosters)
     }
 
     case 'REPLACE_STATE':

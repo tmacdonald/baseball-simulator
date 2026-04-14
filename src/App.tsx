@@ -1,5 +1,5 @@
 import { useReducer, useCallback, useState, useEffect } from 'react'
-import { gameReducer, initialState } from './gameReducer'
+import { gameReducer, createInitialState } from './gameReducer'
 import { getDiceScheme, resolveOutcome } from './diceLogic'
 import type { DiceSchemeName } from './types'
 import Scoreboard from './components/Scoreboard'
@@ -15,7 +15,7 @@ import type { CareerStatsData } from './statsStorage'
 import styles from './App.module.css'
 
 export function GameInstance() {
-  const [state, dispatch] = useReducer(gameReducer, initialState)
+  const [state, dispatch] = useReducer(gameReducer, undefined, () => createInitialState(getCareerStats().rosters))
   const [diceSchemeName, setDiceSchemeName] = useState<DiceSchemeName>('d20')
   const [currentRoll, setCurrentRoll] = useState<[number, number] | null>(null)
 
@@ -107,8 +107,10 @@ export function GameInstance() {
 
   const handleClearStats = useCallback(() => {
     clearCareerStats()
+    const newCareer = getCareerStats()
     setCareerStats(null)
     setHasSavedStats(false)
+    dispatch({ type: 'NEW_GAME', rosters: newCareer.rosters })
   }, [])
 
   const handleSchemeChange = useCallback((scheme: DiceSchemeName) => {
@@ -231,7 +233,6 @@ export function GameInstance() {
         <section className={styles.logSection} aria-label="Career Stats">
           <div className={styles.sectionLabel}>Career Stats</div>
           <CareerStats
-            rosters={state.rosters}
             careerStats={careerStats}
           />
         </section>

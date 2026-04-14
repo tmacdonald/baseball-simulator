@@ -57,5 +57,5 @@ export interface GameState {
 
 export type GameAction =
   | { type: 'PLAY'; outcome: Outcome }
-  | { type: 'NEW_GAME' }
+  | { type: 'NEW_GAME'; rosters?: { away: Player[]; home: Player[] } }
   | { type: 'REPLACE_STATE'; state: GameState }

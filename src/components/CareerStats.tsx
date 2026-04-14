@@ -4,14 +4,13 @@ import type { CareerStatsData } from '../statsStorage'
 import styles from './Roster.module.css'
 
 interface Props {
-  rosters: { away: Player[]; home: Player[] }
   careerStats: CareerStatsData
 }
 
-export default function CareerStats({ rosters, careerStats }: Props) {
+export default function CareerStats({ careerStats }: Props) {
   const [activeTab, setActiveTab] = useState<'away' | 'home'>('away')
 
-  const roster = activeTab === 'away' ? rosters.away : rosters.home
+  const roster = activeTab === 'away' ? careerStats.rosters.away : careerStats.rosters.home
   const stats = activeTab === 'away' ? careerStats.away : careerStats.home
   const teamStats = activeTab === 'away' ? careerStats.team.away : careerStats.team.home
 
