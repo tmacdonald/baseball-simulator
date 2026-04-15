@@ -120,9 +120,17 @@ function advanceInning(state: GameState): GameState {
 
   if (s.halfInning === 'top') {
     s.halfInning = 'bottom'
+
+    if (s.inning > 9) {
+      const secondBaseIndex = s.batterIndex['home'] - 1;
+      s.bases = [null, secondBaseIndex < 0 ? 8 : secondBaseIndex, null]
+    }
   } else {
     const away = awayTotal(s.score)
     const home = homeTotal(s.score)
+
+    if (s.inning > 9) {
+    }
 
     if (s.inning >= 9 && home !== away) {
       return { ...s, gameOver: true }
@@ -130,6 +138,10 @@ function advanceInning(state: GameState): GameState {
 
     s.inning++
     s.halfInning = 'top'
+    if (s.inning > 9) {
+      const secondBaseIndex = s.batterIndex['away'] - 1;
+      s.bases = [null, secondBaseIndex < 0 ? 8 : secondBaseIndex, null]
+    }
 
     while (s.score.away.length < s.inning) s.score = { ...s.score, away: [...s.score.away, 0], home: [...s.score.home, 0] }
   }
@@ -195,7 +207,7 @@ function logEntry(
   runsScored: number,
 ): string {
   const half = prevState.halfInning === 'top' ? '▲' : '▼'
-  
+
   let actionText = formatAction(batterName, label)
 
   if (runsScored === 1) {
@@ -233,7 +245,7 @@ function logEntry(
 // ─── Initial state ────────────────────────────────────────────────────────────
 
 function assignBonuses(roster: Player[]): Player[] {
-  const newRoster = roster.map(({ bonus, ...rest }) => rest)
+  const newRoster: Player[] = roster.map(({ bonus, ...rest }) => rest)
   let p1 = Math.floor(Math.random() * 9)
   let p2 = Math.floor(Math.random() * 9)
   while (p2 === p1) {
@@ -335,7 +347,7 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
       if (runsScored > 0) {
         statsForBatter.rbi += runsScored
       }
-      
+
       newStats[batterIdx] = statsForBatter
 
       // Increment runs for scoring runners
@@ -354,10 +366,10 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
         [team]: (batterIdx + 1) % 9,
       }
 
-      let s: GameState = { 
-        ...nextState, 
-        lastResult: label, 
-        log: [...state.log, entry], 
+      let s: GameState = {
+        ...nextState,
+        lastResult: label,
+        log: [...state.log, entry],
         hits,
         playerStats,
         batterIndex: newBatterIndex,
